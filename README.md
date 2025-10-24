@@ -1,1 +1,1 @@
-# bulk-utm-generator
+# Bulk UTM generator
