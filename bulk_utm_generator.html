@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTM Generator - Bulk UTM Link Builder</title>
+    <meta name="description" content="Free bulk UTM link generator with real-time generation, autocomplete, QR codes, and Excel export. Create hundreds of UTM tracking URLs instantly.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 15px;
+        }
+
+        .toolbar {
+            background: #fafafa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 5;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-info {
+            background: #06b6d4;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #0891b2;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            padding: 20px 30px;
+            position: relative;
+            z-index: 10;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 2000px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            cursor: help;
+        }
+
+        th.required::after {
+            content: ' *';
+            color: #fde047;
+        }
+
+        .tooltip-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 11px;
+            margin-left: 4px;
+            cursor: help;
+            vertical-align: middle;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 12px;
+            position: absolute;
+            z-index: 9999;
+            top: 100%;
+            left: 50%;
+            margin-left: -150px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .tooltip-text::before {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #1f2937 transparent;
+        }
+
+        th:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-example {
+            color: #93c5fd;
+            font-style: italic;
+            display: block;
+            margin-top: 6px;
+            font-size: 11px;
+        }
+
+        td {
+            padding: 4px;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        tr.generating {
+            background: #dbeafe;
+            animation: pulse 0.3s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .row-number {
+            text-align: center;
+            color: #6b7280;
+            font-weight: 500;
+            width: 40px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .icon-btn {
+            padding: 4px 8px;
+            font-size: 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .icon-btn:hover {
+            background: #5568d3;
+        }
+
+        .icon-btn.duplicate {
+            background: #06b6d4;
+        }
+
+        .icon-btn.duplicate:hover {
+            background: #0891b2;
+        }
+
+        .icon-btn.delete {
+            background: #ef4444;
+        }
+
+        .icon-btn.delete:hover {
+            background: #dc2626;
+        }
+
+        .output-cell {
+            font-size: 11px;
+            color: #374151;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .status-success, .status-auto {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .status-error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .qr-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .qr-link:hover {
+            text-decoration: underline;
+        }
+
+        .stats {
+            background: #fafafa;
+            padding: 15px 30px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d1d5db;
+            border-top: none;
+            z-index: 999;
+            background: white;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            left: 4px;
+            right: 4px;
+            top: 100%;
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #dbeafe;
+        }
+
+        .autocomplete-item strong {
+            color: #667eea;
+        }
+
+        .alert {
+            padding: 12px 30px;
+            margin: 0;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #9ca3af;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        #qrImage {
+            max-width: 100%;
+            margin: 20px 0;
+        }
+
+        .download-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .download-buttons button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .quick-fill {
+            background: #fef3c7;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+            z-index: 5;
+        }
+
+        .quick-fill h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #d97706;
+        }
+
+        .quick-fill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .quick-fill-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quick-fill-item label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #374151;
+        }
+
+        .quick-fill-item input {
+            padding: 6px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .quick-fill-btn {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+        }
+
+        .help-modal .modal-content {
+            max-width: 700px;
+        }
+
+        .help-content {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .help-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .help-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .help-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .help-content li {
+            margin-bottom: 8px;
+        }
+
+        .help-content strong {
+            color: #1f2937;
+        }
+
+        .help-content code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .auto-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+            font-weight: 600;
+        }
+
+        .footer {
+            background: #f9fafb;
+            padding: 20px 30px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .tooltip-text {
+                width: 220px;
+                margin-left: -110px;
+            }
+
+            .download-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Bulk UTM Generator</h1>
+            <p>Create and manage UTM tracking URLs with real-time generation <span class="auto-badge">AUTO</span></p>
+        </div>
+
+        <div class="alert" id="alertBox"></div>
+
+        <!-- Quick Fill Section -->
+        <div class="quick-fill">
+            <h3>⚡ Quick Fill All Rows</h3>
+            <div class="quick-fill-grid">
+                <div class="quick-fill-item">
+                    <label>utm_source</label>
+                    <input type="text" id="quickSource" placeholder="facebook">
+                </div>
+                <div class="quick-fill-item">
+                    <label>utm_medium</label>
+                    <input type="text" id="quickMedium" placeholder="social">
+                </div>
+                <div class="quick-fill-item">
+                    <label>utm_campaign</label>
+                    <input type="text" id="quickCampaign" placeholder="summer_sale">
+                </div>
+                <div class="quick-fill-item">
+                    <label>utm_term</label>
+                    <input type="text" id="quickTerm" placeholder="">
+                </div>
+                <div class="quick-fill-item">
+                    <label>utm_content</label>
+                    <input type="text" id="quickContent" placeholder="">
+                </div>
+                <div class="quick-fill-item">
+                    <label>utm_source_platform</label>
+                    <input type="text" id="quickPlatform" placeholder="facebook_ads">
+                </div>
+                <div class="quick-fill-item">
+                    <label>utm_creative_format</label>
+                    <input type="text" id="quickFormat" placeholder="video">
+                </div>
+                <div class="quick-fill-item">
+                    <label>utm_marketing_tactic</label>
+                    <input type="text" id="quickTactic" placeholder="awareness">
+                </div>
+                <button class="btn-info quick-fill-btn" onclick="applyQuickFill()">⚡ Apply to All Empty Rows</button>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn-primary" onclick="addRow()">➕ Add Row</button>
+            <button class="btn-success" onclick="regenerateAll()">🔄 Regenerate All</button>
+            <button class="btn-primary" onclick="exportToCSV()">💾 Export CSV</button>
+            <button class="btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
+            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
+            <button class="btn-secondary" onclick="showHelp()">❓ Help</button>
+        </div>
+
+        <div class="table-container">
+            <table id="utmTable">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th style="width: 200px;" class="required">
+                            Base URL
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Base URL Address</strong><br>
+                                The full web address where you want to direct users. Must start with http:// or https://.
+                                <span class="tooltip-example">Example: https://example.com</span>
+                                <span class="tooltip-example">https://example.com/products</span>
+                            </span>
+                        </th>
+                        <th style="width: 120px;" class="required">
+                            utm_source
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Campaign Source</strong><br>
+                                Where the visitor is coming from. Identifies the traffic source.
+                                <span class="tooltip-example">Example: google, facebook, newsletter, instagram, linkedin</span>
+                            </span>
+                        </th>
+                        <th style="width: 120px;" class="required">
+                            utm_medium
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Campaign Medium</strong><br>
+                                The type of marketing channel or method.
+                                <span class="tooltip-example">Example: cpc (paid ads), email, social, organic, referral, display</span>
+                            </span>
+                        </th>
+                        <th style="width: 150px;" class="required">
+                            utm_campaign
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Campaign Name</strong><br>
+                                Specific name of your marketing campaign. Use consistent naming.
+                                <span class="tooltip-example">Example: summer_sale_2024, black_friday, product_launch, spring_promo</span>
+                            </span>
+                        </th>
+                        <th style="width: 120px;">
+                            utm_term
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Campaign Term (Optional)</strong><br>
+                                Used mainly for paid advertising to identify keywords.
+                                <span class="tooltip-example">Example: running+shoes, best+laptop, luxury+vacation</span>
+                            </span>
+                        </th>
+                        <th style="width: 120px;">
+                            utm_content
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Content/Variation (Optional)</strong><br>
+                                Differentiate similar links or ads within the same campaign.
+                                <span class="tooltip-example">Example: banner_01, text_link, button_blue, header_cta, video_thumbnail</span>
+                            </span>
+                        </th>
+                        <th style="width: 150px;">
+                            utm_id
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Campaign ID (Auto)</strong><br>
+                                Unique campaign identifier. Auto-generated in format YYYYMMDD_XXX.
+                                <span class="tooltip-example">Example: 20240323_001</span>
+                            </span>
+                        </th>
+                        <th style="width: 150px;">
+                            utm_source_platform
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Source Platform (Optional)</strong><br>
+                                Specific advertising platform within the source for more precise tracking.
+                                <span class="tooltip-example">Example: facebook_ads, google_ads, instagram_ads, linkedin_ads</span>
+                            </span>
+                        </th>
+                        <th style="width: 150px;">
+                            utm_creative_format
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Creative Format (Optional)</strong><br>
+                                Type of ad format or creative material.
+                                <span class="tooltip-example">Example: video, banner, carousel, story, single_image, text_ad</span>
+                            </span>
+                        </th>
+                        <th style="width: 150px;">
+                            utm_marketing_tactic
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Marketing Tactic (Optional)</strong><br>
+                                Marketing funnel stage or campaign objective.
+                                <span class="tooltip-example">Example: awareness, consideration, conversion, retention, lead_generation</span>
+                            </span>
+                        </th>
+                        <th style="width: 300px;">
+                            Final UTM URL <span class="auto-badge">AUTO</span>
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Final UTM Link</strong><br>
+                                Complete URL with added UTM parameters. Auto-generated as you type. Use this link in your campaigns.
+                            </span>
+                        </th>
+                        <th style="width: 100px;">
+                            Status
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Generation Status</strong><br>
+                                🔄 Auto = automatically generated<br>
+                                ❌ Error = validation problem<br>
+                                Waiting = needs required fields
+                            </span>
+                        </th>
+                        <th style="width: 80px;">
+                            QR Code
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>QR Code</strong><br>
+                                Generate QR code for your UTM link. Download in multiple formats (PNG, JPEG, SVG, EPS).
+                            </span>
+                        </th>
+                        <th style="width: 80px;">
+                            Actions
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Row Actions</strong><br>
+                                📋 = Duplicate row<br>
+                                🗑️ = Delete row
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-label">Total Rows</span>
+                <span class="stat-value" id="totalRows">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Generated</span>
+                <span class="stat-value" id="generatedRows">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Errors</span>
+                <span class="stat-value" id="errorRows" style="color: #ef4444;">0</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Free Bulk UTM Generator | Made with ❤️ for Marketers | <a href="https://example.com" target="_blank">example.com</a></p>
+            <p style="margin-top: 8px; font-size: 12px;">All data is stored locally in your browser. No data is sent to any server.</p>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>QR Code</h2>
+                <span class="close" onclick="closeQRModal()">&times;</span>
+            </div>
+            <div id="qrContainer">
+                <img id="qrImage" src="" alt="QR Code">
+                <p id="qrUrl" style="word-break: break-all; font-size: 12px; color: #6b7280; margin-top: 10px;"></p>
+            </div>
+            <div class="download-buttons">
+                <button class="btn-primary" onclick="downloadQR('png')">💾 Download PNG</button>
+                <button class="btn-primary" onclick="downloadQR('jpeg')">💾 Download JPEG</button>
+                <button class="btn-info" onclick="downloadQR('svg')">💾 Download SVG</button>
+                <button class="btn-info" onclick="downloadQR('eps')">💾 Download EPS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal help-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 Help & Documentation</h2>
+                <span class="close" onclick="closeHelpModal()">&times;</span>
+            </div>
+            <div class="help-content">
+                <h3>🚀 QUICK START</h3>
+                <ul>
+                    <li>Click <strong>"Add Row"</strong> to create new entries</li>
+                    <li>Fill in <strong>required fields</strong> (marked with *)</li>
+                    <li>URLs <strong>generate automatically</strong> as you type</li>
+                    <li>QR codes are available immediately after generation</li>
+                </ul>
+
+                <h3>🔄 REAL-TIME GENERATION</h3>
+                <ul>
+                    <li>UTM URLs generate <strong>automatically while typing</strong></li>
+                    <li>Just fill in the 4 required fields and the URL is created</li>
+                    <li>Any field change updates the URL immediately</li>
+                    <li>No need to click "Generate" button</li>
+                    <li>Use "Regenerate All" to refresh all URLs if needed</li>
+                </ul>
+
+                <h3>💡 COLUMN TOOLTIPS</h3>
+                <ul>
+                    <li>Hover over <strong>column names</strong> to see help</li>
+                    <li>Look for the <code>?</code> icon</li>
+                    <li>Contains explanations and specific examples</li>
+                </ul>
+
+                <h3>📋 DUPLICATE ROW</h3>
+                <ul>
+                    <li>Click the <strong>📋 icon</strong> to duplicate a row</li>
+                    <li>All data is copied except Base URL and utm_id</li>
+                    <li>Perfect for similar campaigns with different URLs</li>
+                    <li>New row is automatically highlighted</li>
+                </ul>
+
+                <h3>⚡ QUICK FILL</h3>
+                <ul>
+                    <li>Fill in the <strong>yellow section</strong> at the top</li>
+                    <li>Click <strong>"Apply to All Empty Rows"</strong></li>
+                    <li>Only empty fields will be filled</li>
+                    <li>Great for bulk generation with different URLs</li>
+                </ul>
+
+                <h3>🔍 AUTOCOMPLETE</h3>
+                <ul>
+                    <li>Start typing in any field</li>
+                    <li>See a list of <strong>previously used values</strong></li>
+                    <li>Navigate with <code>↑↓</code> arrow keys or mouse</li>
+                    <li>Press <code>Enter</code> to select</li>
+                    <li>Press <code>Esc</code> to close</li>
+                    <li>Autocomplete learns from every entered value</li>
+                </ul>
+
+                <h3>⌨️ KEYBOARD SHORTCUTS</h3>
+                <ul>
+                    <li><code>Tab</code> - Move to next field</li>
+                    <li><code>Enter</code> in autocomplete - Select item</li>
+                    <li><code>Esc</code> - Close autocomplete</li>
+                    <li><code>↑↓</code> - Navigate in autocomplete</li>
+                </ul>
+
+                <h3>📱 QR CODES</h3>
+                <ul>
+                    <li>After auto-generation, click <strong>"View"</strong> to see QR code</li>
+                    <li>Download formats available:</li>
+                    <li><strong>PNG</strong> - raster, universal use</li>
+                    <li><strong>JPEG</strong> - raster, photos and presentations</li>
+                    <li><strong>SVG</strong> - vector, scalable for graphics</li>
+                    <li><strong>EPS</strong> - vector, professional printing</li>
+                    <li>All QR codes have <strong>high error correction (30%)</strong></li>
+                </ul>
+
+                <h3>📊 DATA EXPORT</h3>
+                <ul>
+                    <li><strong>CSV</strong> - Compatible with Excel, Google Sheets</li>
+                    <li><strong>Excel</strong> - Direct .xlsx format with formatting</li>
+                    <li>Includes all columns and Final UTM URLs</li>
+                    <li>Status of each row is included</li>
+                </ul>
+
+                <h3>💾 AUTOMATIC SAVING</h3>
+                <ul>
+                    <li>Data <strong>saves automatically</strong> to browser</li>
+                    <li>Persists after closing and reopening</li>
+                    <li>Works only in this browser on this device</li>
+                    <li>Includes autocomplete history</li>
+                </ul>
+
+                <h3>✅ REQUIRED FIELDS</h3>
+                <ul>
+                    <li><strong>Base URL</strong> - Must start with http:// or https://</li>
+                    <li><strong>utm_source</strong> - Campaign source</li>
+                    <li><strong>utm_medium</strong> - Media type</li>
+                    <li><strong>utm_campaign</strong> - Campaign name</li>
+                </ul>
+
+                <h3>📝 OPTIONAL FIELDS</h3>
+                <ul>
+                    <li><strong>utm_term</strong> - Keywords (PPC)</li>
+                    <li><strong>utm_content</strong> - Content variation</li>
+                    <li><strong>utm_id</strong> - Auto-generated unique ID</li>
+                    <li><strong>utm_source_platform</strong> - Ad platform</li>
+                    <li><strong>utm_creative_format</strong> - Ad format</li>
+                    <li><strong>utm_marketing_tactic</strong> - Marketing funnel stage</li>
+                </ul>
+
+                <h3>💡 BEST PRACTICES</h3>
+                <ul>
+                    <li>Use <strong>consistent naming conventions</strong></li>
+                    <li>Prefer <strong>lowercase letters</strong></li>
+                    <li>Use <strong>underscores</strong> instead of spaces</li>
+                    <li>Test URLs before using in campaigns</li>
+                    <li>Duplicate rows for similar campaigns</li>
+                    <li>Old UTM parameters are automatically cleaned</li>
+                    <li>Anchor links (#) are moved to end of URL</li>
+                </ul>
+
+                <h3>🎯 UTM PARAMETER EXAMPLES</h3>
+                <ul>
+                    <li><strong>Email Newsletter:</strong> source=newsletter, medium=email, campaign=weekly_update</li>
+                    <li><strong>Facebook Ad:</strong> source=facebook, medium=social, campaign=spring_sale</li>
+                    <li><strong>Google Search:</strong> source=google, medium=cpc, campaign=brand_keywords</li>
+                    <li><strong>Instagram Story:</strong> source=instagram, medium=social, campaign=product_launch</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        let rows = [];
+        let rowCounter = 0;
+        let autocompleteData = {
+            utm_source: new Set(['google', 'facebook', 'instagram', 'linkedin', 'twitter', 'newsletter', 'youtube']),
+            utm_medium: new Set(['cpc', 'social', 'email', 'organic', 'referral', 'display', 'video', 'affiliate']),
+            utm_campaign: new Set(),
+            utm_term: new Set(),
+            utm_content: new Set(),
+            utm_source_platform: new Set(['facebook_ads', 'google_ads', 'instagram_ads', 'linkedin_ads', 'twitter_ads']),
+            utm_creative_format: new Set(['video', 'banner', 'carousel', 'story', 'single_image', 'text_ad']),
+            utm_marketing_tactic: new Set(['awareness', 'consideration', 'conversion', 'retention', 'lead_generation'])
+        };
+        let currentAutocompleteInput = null;
+        let currentQRUrlForDownload = '';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            if (rows.length === 0) {
+                addRow();
+                addRow();
+                addRow();
+            }
+            updateStats();
+        });
+
+        function addRow(prefillData = null) {
+            rowCounter++;
+            const tbody = document.getElementById('tableBody');
+            const tr = document.createElement('tr');
+            tr.id = `row-${rowCounter}`;
+            tr.dataset.rowId = rowCounter;
+            tr.dataset.displayNumber = getNextDisplayNumber();
+
+            tr.innerHTML = `
+                <td class="row-number">${tr.dataset.displayNumber}</td>
+                <td><input type="url" data-field="baseUrl" placeholder="https://example.com" oninput="autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmSource" data-autocomplete="utm_source" placeholder="facebook" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmMedium" data-autocomplete="utm_medium" placeholder="social" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmCampaign" data-autocomplete="utm_campaign" placeholder="summer_sale" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmTerm" data-autocomplete="utm_term" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmContent" data-autocomplete="utm_content" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td><input type="text" data-field="utmId" placeholder="Auto" readonly style="background: #f9fafb;"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmSourcePlatform" data-autocomplete="utm_source_platform" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmCreativeFormat" data-autocomplete="utm_creative_format" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmMarketingTactic" data-autocomplete="utm_marketing_tactic" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="output-cell" data-field="finalUrl">-</td>
+                <td class="status-pending" data-field="status">Waiting</td>
+                <td><span data-field="qr">-</span></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="icon-btn duplicate" onclick="duplicateRow(${rowCounter})" title="Duplicate row">📋</button>
+                        <button class="icon-btn delete" onclick="deleteRow(${rowCounter})" title="Delete row">🗑️</button>
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+            
+            const newRow = {
+                id: rowCounter,
+                baseUrl: '',
+                utmSource: '',
+                utmMedium: '',
+                utmCampaign: '',
+                utmTerm: '',
+                utmContent: '',
+                utmId: '',
+                utmSourcePlatform: '',
+                utmCreativeFormat: '',
+                utmMarketingTactic: '',
+                finalUrl: '',
+                status: 'pending',
+                qrUrl: ''
+            };
+
+            if (prefillData) {
+                Object.keys(prefillData).forEach(key => {
+                    if (key !== 'id' && key !== 'finalUrl' && key !== 'status' && key !== 'qrUrl' && key !== 'utmId') {
+                        newRow[key] = prefillData[key];
+                        const input = tr.querySelector(`input[data-field="${key}"]`);
+                        if (input) input.value = prefillData[key];
+                    }
+                });
+                setTimeout(() => autoGenerateUTM(rowCounter), 100);
+            }
+
+            rows.push(newRow);
+            updateStats();
+            saveToLocalStorage();
+            
+            return rowCounter;
+        }
+
+        function getNextDisplayNumber() {
+            const tbody = document.getElementById('tableBody');
+            const existingRows = tbody.querySelectorAll('tr');
+            return existingRows.length + 1;
+        }
+
+        function renumberAllRows() {
+            const tbody = document.getElementById('tableBody');
+            const existingRows = tbody.querySelectorAll('tr');
+            
+            existingRows.forEach((tr, index) => {
+                const displayNumber = index + 1;
+                tr.dataset.displayNumber = displayNumber;
+                const numberCell = tr.querySelector('.row-number');
+                if (numberCell) {
+                    numberCell.textContent = displayNumber;
+                }
+                
+                const rowId = parseInt(tr.dataset.rowId);
+                const row = rows.find(r => r.id === rowId);
+                if (row && row.utmCampaign) {
+                    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                    row.utmId = `${date}_${String(displayNumber).padStart(3, '0')}`;
+                    const utmIdInput = tr.querySelector('input[data-field="utmId"]');
+                    if (utmIdInput) {
+                        utmIdInput.value = row.utmId;
+                    }
+                    if (row.finalUrl) {
+                        autoGenerateUTM(rowId);
+                    }
+                }
+            });
+        }
+
+        function autoGenerateUTM(rowId) {
+            const tr = document.getElementById(`row-${rowId}`);
+            if (!tr) return;
+
+            const row = rows.find(r => r.id === rowId);
+            if (!row) return;
+
+            const inputs = tr.querySelectorAll('input[data-field]');
+            inputs.forEach(input => {
+                const field = input.dataset.field;
+                const value = input.value.trim();
+                row[field] = value;
+                
+                const autocompleteField = input.dataset.autocomplete;
+                if (value && autocompleteField && autocompleteData[autocompleteField]) {
+                    autocompleteData[autocompleteField].add(value);
+                }
+            });
+
+            if (row.utmCampaign) {
+                const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                const displayNumber = tr.dataset.displayNumber || getNextDisplayNumber();
+                row.utmId = `${date}_${String(displayNumber).padStart(3, '0')}`;
+                tr.querySelector('input[data-field="utmId"]').value = row.utmId;
+            }
+
+            if (!row.baseUrl || !row.utmSource || !row.utmMedium || !row.utmCampaign) {
+                const finalUrlCell = tr.querySelector('[data-field="finalUrl"]');
+                const statusCell = tr.querySelector('[data-field="status"]');
+                const qrCell = tr.querySelector('[data-field="qr"]');
+                
+                finalUrlCell.textContent = '-';
+                statusCell.textContent = 'Waiting for data';
+                statusCell.className = 'status-pending';
+                qrCell.textContent = '-';
+                
+                row.finalUrl = '';
+                row.status = 'pending';
+                row.qrUrl = '';
+                return;
+            }
+
+            if (!validateURL(row.baseUrl)) {
+                row.status = 'error';
+                row.finalUrl = 'Invalid URL';
+                updateRowUI(tr, row);
+                return;
+            }
+
+            tr.classList.add('generating');
+            setTimeout(() => tr.classList.remove('generating'), 300);
+
+            const cleanUrl = cleanURL(row.baseUrl);
+            const params = new URLSearchParams();
+            
+            if (row.utmSource) params.set('utm_source', row.utmSource);
+            if (row.utmMedium) params.set('utm_medium', row.utmMedium);
+            if (row.utmCampaign) params.set('utm_campaign', row.utmCampaign);
+            if (row.utmTerm) params.set('utm_term', row.utmTerm);
+            if (row.utmContent) params.set('utm_content', row.utmContent);
+            if (row.utmId) params.set('utm_id', row.utmId);
+            if (row.utmSourcePlatform) params.set('utm_source_platform', row.utmSourcePlatform);
+            if (row.utmCreativeFormat) params.set('utm_creative_format', row.utmCreativeFormat);
+            if (row.utmMarketingTactic) params.set('utm_marketing_tactic', row.utmMarketingTactic);
+
+            const separator = cleanUrl.includes('?') ? '&' : '?';
+            row.finalUrl = cleanUrl + separator + params.toString();
+
+            const anchorMatch = row.baseUrl.match(/#.+$/);
+            if (anchorMatch) {
+                row.finalUrl += anchorMatch[0];
+            }
+
+            row.qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&data=${encodeURIComponent(row.finalUrl)}`;
+            row.status = 'auto';
+            
+            updateRowUI(tr, row);
+            updateStats();
+            saveToLocalStorage();
+        }
+
+        function duplicateRow(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row) return;
+
+            const newRowData = { ...row };
+            delete newRowData.id;
+            delete newRowData.finalUrl;
+            delete newRowData.status;
+            delete newRowData.qrUrl;
+            delete newRowData.utmId;
+
+            const newRowId = addRow(newRowData);
+            
+            const newTr = document.getElementById(`row-${newRowId}`);
+            if (newTr) {
+                newTr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                newTr.style.background = '#dbeafe';
+                setTimeout(() => {
+                    newTr.style.background = '';
+                }, 1000);
+            }
+
+            showAlert('Row duplicated successfully', 'success');
+        }
+
+        function handleAutocomplete(input, rowId) {
+            const field = input.dataset.autocomplete;
+            const value = input.value.toLowerCase();
+
+            closeAllAutocomplete();
+
+            if (!value || value.length < 1) return;
+
+            const items = Array.from(autocompleteData[field] || []);
+            const filtered = items.filter(item => 
+                item.toLowerCase().includes(value)
+            );
+
+            if (filtered.length === 0) return;
+
+            const wrapper = input.closest('.autocomplete-wrapper');
+            const autocompleteDiv = document.createElement('div');
+            autocompleteDiv.className = 'autocomplete-items';
+
+            filtered.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'autocomplete-item';
+                
+                const index = item.toLowerCase().indexOf(value);
+                if (index !== -1) {
+                    const before = item.substring(0, index);
+                    const match = item.substring(index, index + value.length);
+                    const after = item.substring(index + value.length);
+                    itemDiv.innerHTML = `${before}<strong>${match}</strong>${after}`;
+                } else {
+                    itemDiv.textContent = item;
+                }
+
+                itemDiv.addEventListener('click', function() {
+                    input.value = item;
+                    autoGenerateUTM(rowId);
+                    closeAllAutocomplete();
+                });
+
+                autocompleteDiv.appendChild(itemDiv);
+            });
+
+            wrapper.appendChild(autocompleteDiv);
+            currentAutocompleteInput = input;
+        }
+
+        function closeAllAutocomplete() {
+            document.querySelectorAll('.autocomplete-items').forEach(el => el.remove());
+            currentAutocompleteInput = null;
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.matches('input[data-autocomplete]')) {
+                closeAllAutocomplete();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (!currentAutocompleteInput) return;
+
+            const autocompleteDiv = currentAutocompleteInput.parentElement.querySelector('.autocomplete-items');
+            if (!autocompleteDiv) return;
+
+            const items = autocompleteDiv.querySelectorAll('.autocomplete-item');
+            let currentFocus = -1;
+
+            items.forEach((item, index) => {
+                if (item.classList.contains('autocomplete-active')) {
+                    currentFocus = index;
+                }
+            });
+
+            if (e.keyCode === 40) {
+                currentFocus++;
+                addActive(items, currentFocus);
+                e.preventDefault();
+            } else if (e.keyCode === 38) {
+                currentFocus--;
+                addActive(items, currentFocus);
+                e.preventDefault();
+            } else if (e.keyCode === 13) {
+                e.preventDefault();
+                if (currentFocus > -1 && items[currentFocus]) {
+                    items[currentFocus].click();
+                }
+            } else if (e.keyCode === 27) {
+                closeAllAutocomplete();
+            }
+        });
+
+        function addActive(items, index) {
+            if (!items || items.length === 0) return;
+            removeActive(items);
+            if (index >= items.length) index = 0;
+            if (index < 0) index = items.length - 1;
+            items[index].classList.add('autocomplete-active');
+            items[index].style.background = '#dbeafe';
+        }
+
+        function removeActive(items) {
+            items.forEach(item => {
+                item.classList.remove('autocomplete-active');
+                item.style.background = '';
+            });
+        }
+
+        function updateRow(rowId) {
+            saveToLocalStorage();
+            updateStats();
+        }
+
+        function applyQuickFill() {
+            const quickData = {
+                utmSource: document.getElementById('quickSource').value.trim(),
+                utmMedium: document.getElementById('quickMedium').value.trim(),
+                utmCampaign: document.getElementById('quickCampaign').value.trim(),
+                utmTerm: document.getElementById('quickTerm').value.trim(),
+                utmContent: document.getElementById('quickContent').value.trim(),
+                utmSourcePlatform: document.getElementById('quickPlatform').value.trim(),
+                utmCreativeFormat: document.getElementById('quickFormat').value.trim(),
+                utmMarketingTactic: document.getElementById('quickTactic').value.trim()
+            };
+
+            let filled = 0;
+
+            rows.forEach(row => {
+                const tr = document.getElementById(`row-${row.id}`);
+                if (!tr) return;
+
+                let hasChanges = false;
+
+                Object.keys(quickData).forEach(key => {
+                    if (quickData[key] && !row[key]) {
+                        row[key] = quickData[key];
+                        const input = tr.querySelector(`input[data-field="${key}"]`);
+                        if (input) {
+                            input.value = quickData[key];
+                            hasChanges = true;
+                        }
+                    }
+                });
+
+                if (hasChanges) {
+                    autoGenerateUTM(row.id);
+                    filled++;
+                }
+            });
+
+            if (filled > 0) {
+                showAlert(`Filled and generated ${filled} rows`, 'success');
+            } else {
+                showAlert('All rows already have values', 'info');
+            }
+        }
+
+        function regenerateAll() {
+            let regenerated = 0;
+            
+            rows.forEach(row => {
+                autoGenerateUTM(row.id);
+                if (row.status === 'auto' || row.status === 'success') {
+                    regenerated++;
+                }
+            });
+
+            showAlert(`Regenerated ${regenerated} rows`, 'success');
+        }
+
+        function deleteRow(rowId) {
+            if (confirm('Are you sure you want to delete this row?')) {
+                const tr = document.getElementById(`row-${rowId}`);
+                if (tr) tr.remove();
+                
+                rows = rows.filter(r => r.id !== rowId);
+                renumberAllRows();
+                updateStats();
+                saveToLocalStorage();
+                showAlert('Row deleted successfully', 'success');
+            }
+        }
+
+        function updateRowUI(tr, row) {
+            const finalUrlCell = tr.querySelector('[data-field="finalUrl"]');
+            const statusCell = tr.querySelector('[data-field="status"]');
+            const qrCell = tr.querySelector('[data-field="qr"]');
+
+            if (row.status === 'auto' || row.status === 'success') {
+                finalUrlCell.innerHTML = `<a href="${row.finalUrl}" target="_blank" title="${row.finalUrl}">${row.finalUrl}</a>`;
+                statusCell.textContent = '🔄 Auto';
+                statusCell.className = 'status-auto';
+                qrCell.innerHTML = `<a href="#" class="qr-link" onclick="showQRModal('${row.finalUrl}', '${row.qrUrl}'); return false;">View</a>`;
+            } else if (row.status === 'error') {
+                finalUrlCell.textContent = row.finalUrl;
+                statusCell.textContent = '❌ Error';
+                statusCell.className = 'status-error';
+                qrCell.textContent = '-';
+            } else {
+                finalUrlCell.textContent = '-';
+                statusCell.textContent = 'Waiting';
+                statusCell.className = 'status-pending';
+                qrCell.textContent = '-';
+            }
+        }
+
+        function validateURL(url) {
+            try {
+                const urlObj = new URL(url);
+                return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+            } catch {
+                return false;
+            }
+        }
+
+        function cleanURL(url) {
+            let clean = url.trim();
+            
+            if (clean.toLowerCase().includes('utm_')) {
+                const urlObj = new URL(clean);
+                const params = new URLSearchParams(urlObj.search);
+                ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 
+                 'utm_id', 'utm_source_platform', 'utm_creative_format', 'utm_marketing_tactic'].forEach(p => params.delete(p));
+                clean = urlObj.origin + urlObj.pathname + (params.toString() ? '?' + params.toString() : '');
+            }
+
+            if (clean.includes('#')) {
+                clean = clean.split('#')[0];
+            }
+
+            return clean;
+        }
+
+        function showQRModal(finalUrl, qrUrl) {
+            currentQRUrlForDownload = finalUrl;
+            document.getElementById('qrImage').src = qrUrl;
+            document.getElementById('qrUrl').textContent = finalUrl;
+            document.getElementById('qrModal').style.display = 'block';
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+
+        function downloadQR(format) {
+            let url = '';
+            const encodedUrl = encodeURIComponent(currentQRUrlForDownload);
+            
+            switch(format) {
+                case 'png':
+                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=png&data=${encodedUrl}`;
+                    break;
+                case 'jpeg':
+                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=jpg&data=${encodedUrl}`;
+                    break;
+                case 'svg':
+                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=svg&data=${encodedUrl}`;
+                    break;
+                case 'eps':
+                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=eps&data=${encodedUrl}`;
+                    break;
+            }
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `qr-code-${Date.now()}.${format}`;
+            link.target = '_blank';
+            link.click();
+
+            showAlert(`QR code downloaded as ${format.toUpperCase()}`, 'success');
+        }
+
+        function exportToCSV() {
+            const headers = ['#', 'Base URL', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 
+                            'utm_content', 'utm_id', 'utm_source_platform', 'utm_creative_format', 
+                            'utm_marketing_tactic', 'Final UTM URL', 'Status'];
+            
+            let csv = headers.join(',') + '\n';
+            
+            const tbody = document.getElementById('tableBody');
+            const allRows = tbody.querySelectorAll('tr');
+            
+            allRows.forEach((tr, index) => {
+                const rowId = parseInt(tr.dataset.rowId);
+                const row = rows.find(r => r.id === rowId);
+                if (!row) return;
+
+                const rowData = [
+                    index + 1,
+                    `"${row.baseUrl}"`,
+                    `"${row.utmSource}"`,
+                    `"${row.utmMedium}"`,
+                    `"${row.utmCampaign}"`,
+                    `"${row.utmTerm}"`,
+                    `"${row.utmContent}"`,
+                    `"${row.utmId}"`,
+                    `"${row.utmSourcePlatform}"`,
+                    `"${row.utmCreativeFormat}"`,
+                    `"${row.utmMarketingTactic}"`,
+                    `"${row.finalUrl}"`,
+                    `"${row.status}"`
+                ];
+                csv += rowData.join(',') + '\n';
+            });
+
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `utm-links-${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+
+            showAlert('CSV file downloaded', 'success');
+        }
+
+        function exportToExcel() {
+            const data = [
+                ['#', 'Base URL', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 
+                 'utm_content', 'utm_id', 'utm_source_platform', 'utm_creative_format', 
+                 'utm_marketing_tactic', 'Final UTM URL', 'Status']
+            ];
+
+            const tbody = document.getElementById('tableBody');
+            const allRows = tbody.querySelectorAll('tr');
+            
+            allRows.forEach((tr, index) => {
+                const rowId = parseInt(tr.dataset.rowId);
+                const row = rows.find(r => r.id === rowId);
+                if (!row) return;
+
+                data.push([
+                    index + 1,
+                    row.baseUrl,
+                    row.utmSource,
+                    row.utmMedium,
+                    row.utmCampaign,
+                    row.utmTerm,
+                    row.utmContent,
+                    row.utmId,
+                    row.utmSourcePlatform,
+                    row.utmCreativeFormat,
+                    row.utmMarketingTactic,
+                    row.finalUrl,
+                    row.status
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            ws['!cols'] = [
+                {wch: 5}, {wch: 30}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 15},
+                {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 60}, {wch: 15}
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, 'UTM Links');
+            XLSX.writeFile(wb, `utm-links-${new Date().toISOString().slice(0,10)}.xlsx`);
+
+            showAlert('Excel file downloaded', 'success');
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all rows? This cannot be undone.')) {
+                document.getElementById('tableBody').innerHTML = '';
+                rows = [];
+                rowCounter = 0;
+                addRow();
+                addRow();
+                addRow();
+                updateStats();
+                saveToLocalStorage();
+                showAlert('All data cleared', 'info');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalRows').textContent = rows.length;
+            document.getElementById('generatedRows').textContent = rows.filter(r => r.status === 'auto' || r.status === 'success').length;
+            document.getElementById('errorRows').textContent = rows.filter(r => r.status === 'error').length;
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} show`;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('utmGeneratorRows', JSON.stringify(rows));
+            localStorage.setItem('utmGeneratorRowCounter', rowCounter);
+            localStorage.setItem('utmGeneratorAutocomplete', JSON.stringify({
+                utm_source: Array.from(autocompleteData.utm_source),
+                utm_medium: Array.from(autocompleteData.utm_medium),
+                utm_campaign: Array.from(autocompleteData.utm_campaign),
+                utm_term: Array.from(autocompleteData.utm_term),
+                utm_content: Array.from(autocompleteData.utm_content),
+                utm_source_platform: Array.from(autocompleteData.utm_source_platform),
+                utm_creative_format: Array.from(autocompleteData.utm_creative_format),
+                utm_marketing_tactic: Array.from(autocompleteData.utm_marketing_tactic)
+            }));
+        }
+
+        function loadFromLocalStorage() {
+            const savedRows = localStorage.getItem('utmGeneratorRows');
+            const savedCounter = localStorage.getItem('utmGeneratorRowCounter');
+            const savedAutocomplete = localStorage.getItem('utmGeneratorAutocomplete');
+
+            if (savedCounter) {
+                rowCounter = parseInt(savedCounter);
+            }
+
+            if (savedAutocomplete) {
+                const data = JSON.parse(savedAutocomplete);
+                Object.keys(data).forEach(key => {
+                    if (autocompleteData[key]) {
+                        autocompleteData[key] = new Set([...autocompleteData[key], ...data[key]]);
+                    }
+                });
+            }
+
+            if (savedRows) {
+                const data = JSON.parse(savedRows);
+                data.forEach(rowData => {
+                    const rowId = addRow();
+                    const tr = document.getElementById(`row-${rowId}`);
+                    const row = rows.find(r => r.id === rowId);
+                    
+                    if (row && tr) {
+                        Object.keys(rowData).forEach(key => {
+                            if (key !== 'id') {
+                                row[key] = rowData[key];
+                                const input = tr.querySelector(`input[data-field="${key}"]`);
+                                if (input && !input.readOnly) {
+                                    input.value = rowData[key] || '';
+                                }
+                            }
+                        });
+                        
+                        if (rowData.utmId) {
+                            tr.querySelector('input[data-field="utmId"]').value = rowData.utmId;
+                        }
+                        
+                        if (rowData.status !== 'pending' && rowData.finalUrl) {
+                            updateRowUI(tr, row);
+                        }
+                    }
+                });
+                
+                renumberAllRows();
+            }
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        function closeHelpModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
