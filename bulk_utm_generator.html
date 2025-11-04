@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UTM Generator - Bulk UTM Link Builder</title>
-    <meta name="description" content="Free bulk UTM link generator with real-time generation, autocomplete, QR codes, and Excel export. Create hundreds of UTM tracking URLs instantly.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
+    <title>UTM Bulk Generator</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
             padding: 20px;
         }
@@ -27,19 +27,31 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
             color: white;
             padding: 20px 30px;
         }
 
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
+            font-size: 24px;
+            margin-bottom: 5px;
         }
 
         .header p {
             opacity: 0.9;
-            font-size: 15px;
+            font-size: 14px;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+            vertical-align: middle;
         }
 
         .toolbar {
@@ -51,6 +63,7 @@
             flex-wrap: wrap;
             position: relative;
             z-index: 5;
+            align-items: center;
         }
 
         button {
@@ -63,40 +76,63 @@
             font-weight: 500;
         }
 
+        .settings-block button.btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
         .btn-primary {
-            background: #667eea;
+            background: #1e88e5;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: #1565c0;
         }
 
         .btn-success {
-            background: #10b981;
+            background: #43a047;
             color: white;
         }
 
         .btn-success:hover {
-            background: #059669;
+            background: #2e7d32;
         }
 
         .btn-secondary {
-            background: #6b7280;
+            background: #757575;
             color: white;
         }
 
         .btn-secondary:hover {
-            background: #4b5563;
+            background: #616161;
+        }
+
+        .btn-danger {
+            background: #e53935;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c62828;
         }
 
         .btn-info {
-            background: #06b6d4;
+            background: #00acc1;
             color: white;
         }
 
         .btn-info:hover {
-            background: #0891b2;
+            background: #00838f;
+        }
+
+        .btn-warning {
+            background: #ffa726;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #fb8c00;
         }
 
         .table-container {
@@ -107,13 +143,16 @@
         }
 
         table {
-            width: 100%;
             border-collapse: collapse;
-            min-width: 2000px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            white-space: nowrap;
         }
 
         th {
-            background: #667eea;
+            background: #1e88e5;
             color: white;
             padding: 12px 8px;
             text-align: left;
@@ -127,7 +166,12 @@
 
         th.required::after {
             content: ' *';
-            color: #fde047;
+            color: #ffeb3b;
+        }
+
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
         }
 
         .tooltip-icon {
@@ -146,8 +190,8 @@
 
         .tooltip-text {
             visibility: hidden;
-            width: 300px;
-            background-color: #1f2937;
+            width: 280px;
+            background-color: #333;
             color: #fff;
             text-align: left;
             border-radius: 6px;
@@ -156,13 +200,14 @@
             z-index: 9999;
             top: 100%;
             left: 50%;
-            margin-left: -150px;
+            margin-left: -140px;
             margin-top: 10px;
             opacity: 0;
             transition: opacity 0.3s;
             font-size: 12px;
-            line-height: 1.6;
+            line-height: 1.5;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            white-space: normal;
         }
 
         .tooltip-text::before {
@@ -173,16 +218,17 @@
             margin-left: -5px;
             border-width: 5px;
             border-style: solid;
-            border-color: transparent transparent #1f2937 transparent;
+            border-color: transparent transparent #333 transparent;
         }
 
-        th:hover .tooltip-text {
+        th:hover .tooltip-text,
+        .tooltip-icon:hover + .tooltip-text {
             visibility: visible;
             opacity: 1;
         }
 
         .tooltip-example {
-            color: #93c5fd;
+            color: #90caf9;
             font-style: italic;
             display: block;
             margin-top: 6px;
@@ -195,12 +241,45 @@
             position: relative;
         }
 
+        .col-platform, .col-format, .col-tactic {
+            display: none;
+        }
+        .quick-fill-item.col-platform,
+        .quick-fill-item.col-format,
+        .quick-fill-item.col-tactic {
+            display: none;
+        }
+
+        body.show-platform th.col-platform,
+        body.show-platform td.col-platform {
+            display: table-cell;
+        }
+        body.show-platform .quick-fill-item.col-platform {
+            display: flex;
+        }
+
+        body.show-format th.col-format,
+        body.show-format td.col-format {
+            display: table-cell;
+        }
+        body.show-format .quick-fill-item.col-format {
+            display: flex;
+        }
+
+        body.show-tactic th.col-tactic,
+        body.show-tactic td.col-tactic {
+            display: table-cell;
+        }
+        body.show-tactic .quick-fill-item.col-tactic {
+            display: flex;
+        }
+
         tr:hover {
-            background: #f9fafb;
+            background: #f5f5f5;
         }
 
         tr.generating {
-            background: #dbeafe;
+            background: #e3f2fd;
             animation: pulse 0.3s;
         }
 
@@ -209,26 +288,59 @@
             50% { opacity: 0.8; }
         }
 
-        input[type="text"], input[type="url"] {
+        input[type="text"], input[type="url"], input[type="number"], select {
             width: 100%;
+            box-sizing: border-box;
+            min-width: 0;
             padding: 8px;
-            border: 1px solid #d1d5db;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 13px;
+            font-size: 11px;
             font-family: inherit;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        input[type="color"] {
+            padding: 0;
+            border: 1px solid #ddd;
+            width: 40px;
+            height: 36px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
+        input[type="text"].hex-input {
+            width: calc(100% - 50px);
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 5px;
+            font-family: monospace;
         }
 
         input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+            border-color: #1e88e5;
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1);
+        }
+
+        input[readonly] {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        input[data-field="utmId"]:not([readonly]) {
+            background: white;
+            cursor: text;
         }
 
         .row-number {
             text-align: center;
-            color: #6b7280;
+            color: #757575;
             font-weight: 500;
             width: 40px;
+            min-width: 40px;
         }
 
         .action-btns {
@@ -239,7 +351,7 @@
         .icon-btn {
             padding: 4px 8px;
             font-size: 16px;
-            background: #667eea;
+            background: #1e88e5;
             color: white;
             border: none;
             border-radius: 4px;
@@ -248,51 +360,80 @@
         }
 
         .icon-btn:hover {
-            background: #5568d3;
+            background: #1565c0;
         }
 
         .icon-btn.duplicate {
-            background: #06b6d4;
+            background: #00acc1;
         }
 
         .icon-btn.duplicate:hover {
-            background: #0891b2;
+            background: #00838f;
         }
 
         .icon-btn.delete {
-            background: #ef4444;
+            background: #e53935;
         }
 
         .icon-btn.delete:hover {
-            background: #dc2626;
+            background: #c62828;
+        }
+
+        .icon-btn.copy {
+            background: #00acc1;
+            font-size: 14px;
+        }
+
+        .icon-btn.copy:hover {
+            background: #00838f;
+        }
+
+        .icon-btn.copy.copied {
+            background: #43a047;
+            animation: copySuccess 0.3s;
+        }
+
+        @keyframes copySuccess {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .output-cell {
             font-size: 11px;
-            color: #374151;
+            color: #424242;
             max-width: 300px;
+            min-width: 200px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .status-success, .status-auto {
-            color: #10b981;
+        .status-success {
+            color: #43a047;
             font-weight: 600;
+            font-size: 12px;
         }
 
         .status-error {
-            color: #ef4444;
+            color: #e53935;
             font-weight: 600;
+            font-size: 12px;
         }
 
         .status-pending {
-            color: #f59e0b;
+            color: #fb8c00;
             font-weight: 600;
+            font-size: 12px;
+        }
+
+        .status-auto {
+            color: #1e88e5;
+            font-weight: 600;
+            font-size: 12px;
         }
 
         .qr-link {
-            color: #667eea;
+            color: #1e88e5;
             text-decoration: none;
             font-size: 12px;
         }
@@ -316,14 +457,14 @@
 
         .stat-label {
             font-size: 12px;
-            color: #6b7280;
+            color: #757575;
             margin-bottom: 4px;
         }
 
         .stat-value {
             font-size: 24px;
             font-weight: 600;
-            color: #667eea;
+            color: #1e88e5;
         }
 
         .autocomplete-wrapper {
@@ -332,7 +473,7 @@
 
         .autocomplete-items {
             position: absolute;
-            border: 1px solid #d1d5db;
+            border: 1px solid #ddd;
             border-top: none;
             z-index: 999;
             background: white;
@@ -344,19 +485,24 @@
             top: 100%;
         }
 
+        .quick-fill-item .autocomplete-items {
+            left: 0;
+            right: 0;
+        }
+
         .autocomplete-item {
             padding: 10px;
             cursor: pointer;
-            font-size: 13px;
-            border-bottom: 1px solid #f3f4f6;
+            font-size: 11px;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .autocomplete-item:hover {
-            background-color: #dbeafe;
+            background-color: #e3f2fd;
         }
 
         .autocomplete-item strong {
-            color: #667eea;
+            color: #1e88e5;
         }
 
         .alert {
@@ -370,18 +516,18 @@
         }
 
         .alert-success {
-            background: #d1fae5;
-            color: #065f46;
+            background: #c8e6c9;
+            color: #2e7d32;
         }
 
         .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
+            background: #ffcdd2;
+            color: #c62828;
         }
 
         .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
+            background: #bbdefb;
+            color: #1565c0;
         }
 
         .modal {
@@ -402,7 +548,7 @@
             border-radius: 8px;
             width: 90%;
             max-width: 600px;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
         }
 
@@ -413,8 +559,60 @@
             margin-bottom: 20px;
         }
 
+        .help-modal .modal-content {
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .help-modal .modal-header {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 100;
+            padding: 20px 30px 15px 30px;
+            margin-bottom: 0;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .help-modal .help-content {
+            padding: 20px 30px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .help-content a {
+            color: #1e88e5;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .help-content a:hover {
+            color: #1565c0;
+            text-decoration: underline;
+        }
+
+        .help-toc ol {
+            padding-left: 20px;
+        }
+
+        .help-toc a {
+            font-weight: 500;
+        }
+
+        .help-content h2 {
+            scroll-margin-top: 20px;
+        }
+
+        .help-content section {
+            scroll-margin-top: 20px;
+        }
+
         .close {
-            color: #9ca3af;
+            color: #aaa;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
@@ -426,7 +624,59 @@
 
         #qrImage {
             max-width: 100%;
-            margin: 20px 0;
+            max-height: 300px;
+            margin: 10px auto;
+            display: block;
+            border: 1px solid #eee;
+        }
+
+        .qr-settings {
+            display: grid;
+            grid-template-columns: 35fr 15fr 25fr 25fr;
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .qr-settings-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .qr-settings-item label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #666;
+        }
+
+        .qr-settings-item select,
+        .qr-settings-item input[type="number"] {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .qr-settings-item .color-input-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .qr-settings-item input[type="color"] {
+            flex-shrink: 0;
+        }
+
+        .qr-settings-item input[type="text"].hex-input {
+            flex-grow: 0;
+            width: auto;
+            max-width: 100px;
+            min-width: 70px;
+            margin-left: 5px;
+            font-family: monospace;
         }
 
         .download-buttons {
@@ -441,18 +691,24 @@
             justify-content: center;
         }
 
-        .quick-fill {
-            background: #fef3c7;
+        .settings-block {
+            background: #fff3e0;
             padding: 15px 30px;
             border-bottom: 1px solid #e0e0e0;
             position: relative;
             z-index: 5;
         }
 
-        .quick-fill h3 {
+        .settings-block h3, .settings-block h4 {
             font-size: 14px;
             margin-bottom: 10px;
-            color: #d97706;
+            color: #f57c00;
+        }
+
+        .quick-fill-block h3 {
+            margin-top: 20px;
+            border-top: 1px solid #fbe9e7;
+            padding-top: 15px;
         }
 
         .quick-fill-grid {
@@ -464,18 +720,19 @@
         .quick-fill-item {
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .quick-fill-item label {
             font-size: 12px;
             font-weight: 600;
             margin-bottom: 4px;
-            color: #374151;
+            color: #666;
         }
 
         .quick-fill-item input {
             padding: 6px 8px;
-            border: 1px solid #d1d5db;
+            border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 13px;
         }
@@ -483,6 +740,35 @@
         .quick-fill-btn {
             grid-column: 1 / -1;
             margin-top: 10px;
+        }
+
+        .column-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .column-settings label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .data-management-settings {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #fbe9e7;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .data-management-settings h4 {
+            width: 100%;
+            margin-bottom: 5px;
         }
 
         .help-modal .modal-content {
@@ -495,7 +781,7 @@
         }
 
         .help-content h3 {
-            color: #667eea;
+            color: #1e88e5;
             margin-top: 20px;
             margin-bottom: 10px;
             font-size: 16px;
@@ -515,11 +801,11 @@
         }
 
         .help-content strong {
-            color: #1f2937;
+            color: #333;
         }
 
         .help-content code {
-            background: #f3f4f6;
+            background: #f5f5f5;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
@@ -528,31 +814,13 @@
 
         .auto-badge {
             display: inline-block;
-            background: #10b981;
+            background: #4caf50;
             color: white;
             font-size: 10px;
             padding: 2px 6px;
             border-radius: 10px;
             margin-left: 5px;
             font-weight: 600;
-        }
-
-        .footer {
-            background: #f9fafb;
-            padding: 20px 30px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -565,75 +833,110 @@
             }
 
             .tooltip-text {
-                width: 220px;
-                margin-left: -110px;
+                width: 200px;
+                margin-left: -100px;
             }
 
             .download-buttons {
                 grid-template-columns: 1fr;
             }
 
-            .header h1 {
-                font-size: 22px;
+            .data-management-settings button {
+                width: 100%;
+            }
+
+            .qr-settings {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
-<body>
+<body class="">
     <div class="container">
         <div class="header">
-            <h1>🚀 Bulk UTM Generator</h1>
-            <p>Create and manage UTM tracking URLs with real-time generation <span class="auto-badge">AUTO</span></p>
+            <h1>🚀 UTM Bulk Generator <span class="version-badge">v1.0.0</span></h1>
+            <p>Fast UTM link generator with automatic update <span class="auto-badge">AUTO</span></p>
         </div>
 
         <div class="alert" id="alertBox"></div>
 
-        <!-- Quick Fill Section -->
-        <div class="quick-fill">
-            <h3>⚡ Quick Fill All Rows</h3>
-            <div class="quick-fill-grid">
-                <div class="quick-fill-item">
-                    <label>utm_source</label>
-                    <input type="text" id="quickSource" placeholder="facebook">
+        <div class="settings-block">
+            <h4>⚙️ Application Settings</h4>
+            <div class="column-settings">
+                <label>
+                    <input type="checkbox" id="toggleUtmId" checked onchange="toggleUtmIdGeneration()">
+                    Auto-generate utm_id
+                </label>
+                <label>
+                    <input type="checkbox" id="togglePlatform" onchange="updateColumnVisibility()">
+                    Show utm_source_platform
+                </label>
+                <label>
+                    <input type="checkbox" id="toggleFormat" onchange="updateColumnVisibility()">
+                    Show utm_creative_format
+                </label>
+                <label>
+                    <input type="checkbox" id="toggleTactic" onchange="updateColumnVisibility()">
+                    Show utm_marketing_tactic
+                </label>
+            </div>
+            <div class="data-management-settings">
+                <h4>💾 Data Management</h4>
+                <button class="btn-success btn-small" onclick="backupData()">Backup Data (JSON)</button>
+                <button class="btn-warning btn-small" onclick="restoreData()">Restore Data (JSON)</button>
+                <button class="btn-danger btn-small" onclick="clearAutocompleteHistory()">Clear Autocomplete History</button>
+                <button class="btn-danger btn-small" onclick="resetApplicationState()" title="Deletes ALL data and resets the application to default state!">Reset Application</button>
+                <button class="btn-secondary btn-small" onclick="openDevConsole()" title="Shows instructions for opening the console">🔧 How to open console?</button>
+            </div>
+            <div class="quick-fill-block">
+                <h3>⚡ Quick Fill</h3>
+                <div class="quick-fill-grid">
+                    <div class="quick-fill-item autocomplete-wrapper">
+                        <label>Base URL</label>
+                        <input type="url" id="quickBaseUrl" placeholder="https://www.example.com">
+                    </div>
+                    <div class="quick-fill-item autocomplete-wrapper">
+                        <label>utm_source</label>
+                        <input type="text" id="quickSource" data-autocomplete="utm_source" placeholder="facebook" oninput="handleAutocomplete(this)">
+                    </div>
+                    <div class="quick-fill-item autocomplete-wrapper">
+                        <label>utm_medium</label>
+                        <input type="text" id="quickMedium" data-autocomplete="utm_medium" placeholder="social" oninput="handleAutocomplete(this)">
+                    </div>
+                    <div class="quick-fill-item autocomplete-wrapper">
+                        <label>utm_campaign</label>
+                        <input type="text" id="quickCampaign" data-autocomplete="utm_campaign" placeholder="summer_sale" oninput="handleAutocomplete(this)">
+                    </div>
+                    <div class="quick-fill-item autocomplete-wrapper">
+                        <label>utm_term</label>
+                        <input type="text" id="quickTerm" data-autocomplete="utm_term" placeholder="keyword" oninput="handleAutocomplete(this)">
+                    </div>
+                    <div class="quick-fill-item autocomplete-wrapper">
+                        <label>utm_content</label>
+                        <input type="text" id="quickContent" data-autocomplete="utm_content" placeholder="banner_01" oninput="handleAutocomplete(this)">
+                    </div>
+                    <div class="quick-fill-item col-platform autocomplete-wrapper">
+                        <label>utm_source_platform</label>
+                        <input type="text" id="quickPlatform" data-autocomplete="utm_source_platform" placeholder="facebook_ads" oninput="handleAutocomplete(this)">
+                    </div>
+                    <div class="quick-fill-item col-format autocomplete-wrapper">
+                        <label>utm_creative_format</label>
+                        <input type="text" id="quickFormat" data-autocomplete="utm_creative_format" placeholder="video" oninput="handleAutocomplete(this)">
+                    </div>
+                    <div class="quick-fill-item col-tactic autocomplete-wrapper">
+                        <label>utm_marketing_tactic</label>
+                        <input type="text" id="quickTactic" data-autocomplete="utm_marketing_tactic" placeholder="awareness" oninput="handleAutocomplete(this)">
+                    </div>
                 </div>
-                <div class="quick-fill-item">
-                    <label>utm_medium</label>
-                    <input type="text" id="quickMedium" placeholder="social">
-                </div>
-                <div class="quick-fill-item">
-                    <label>utm_campaign</label>
-                    <input type="text" id="quickCampaign" placeholder="summer_sale">
-                </div>
-                <div class="quick-fill-item">
-                    <label>utm_term</label>
-                    <input type="text" id="quickTerm" placeholder="">
-                </div>
-                <div class="quick-fill-item">
-                    <label>utm_content</label>
-                    <input type="text" id="quickContent" placeholder="">
-                </div>
-                <div class="quick-fill-item">
-                    <label>utm_source_platform</label>
-                    <input type="text" id="quickPlatform" placeholder="facebook_ads">
-                </div>
-                <div class="quick-fill-item">
-                    <label>utm_creative_format</label>
-                    <input type="text" id="quickFormat" placeholder="video">
-                </div>
-                <div class="quick-fill-item">
-                    <label>utm_marketing_tactic</label>
-                    <input type="text" id="quickTactic" placeholder="awareness">
-                </div>
-                <button class="btn-info quick-fill-btn" onclick="applyQuickFill()">⚡ Apply to All Empty Rows</button>
+                <button class="btn-info quick-fill-btn" onclick="applyQuickFill()">⚡ Apply to all empty rows</button>
             </div>
         </div>
 
         <div class="toolbar">
             <button class="btn-primary" onclick="addRow()">➕ Add Row</button>
-            <button class="btn-success" onclick="regenerateAll()">🔄 Regenerate All</button>
             <button class="btn-primary" onclick="exportToCSV()">💾 Export CSV</button>
             <button class="btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
-            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
+            <button class="btn-secondary" onclick="clearAll()" title="Clears all rows but keeps history and settings">🗑️ Clear Rows</button>
             <button class="btn-secondary" onclick="showHelp()">❓ Help</button>
         </div>
 
@@ -641,130 +944,130 @@
             <table id="utmTable">
                 <thead>
                     <tr>
-                        <th style="width: 40px;">#</th>
-                        <th style="width: 200px;" class="required">
-                            Base URL
+                        <th style="width: 20px;">#</th>
+                        <th style="width: 250px;" class="required"> Base URL
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Base URL Address</strong><br>
-                                The full web address where you want to direct users. Must start with http:// or https://.
-                                <span class="tooltip-example">Example: https://example.com</span>
-                                <span class="tooltip-example">https://example.com/products</span>
+                                <strong>Base URL address</strong><br>
+                                Full page address where you want to direct users. If you don't enter protocol (http:// or https://), https:// will be added automatically.
+                                <span class="tooltip-example">Example: example.com → https://example.com</span>
+                                <span class="tooltip-example">https://www.example.com/products</span>
+                                <span class="tooltip-example">www.example.com → https://www.example.com</span>
                             </span>
                         </th>
-                        <th style="width: 120px;" class="required">
-                            utm_source
+                        <th style="width: 80px;" class="required"> utm_source
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Campaign Source</strong><br>
-                                Where the visitor is coming from. Identifies the traffic source.
-                                <span class="tooltip-example">Example: google, facebook, newsletter, instagram, linkedin</span>
+                                <strong>Campaign source</strong><br>
+                                Where the visitor comes from. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: facebook, google, newsletter</span>
+                                <span class="tooltip-example">"Google Ads" → google_ads</span>
                             </span>
                         </th>
-                        <th style="width: 120px;" class="required">
-                            utm_medium
+                        <th style="width: 80px;" class="required"> utm_medium
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Campaign Medium</strong><br>
-                                The type of marketing channel or method.
-                                <span class="tooltip-example">Example: cpc (paid ads), email, social, organic, referral, display</span>
+                                <strong>Campaign medium</strong><br>
+                                Type of marketing channel. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: cpc, email, social, organic</span>
+                                <span class="tooltip-example">"Social Media" → social_media</span>
                             </span>
                         </th>
-                        <th style="width: 150px;" class="required">
-                            utm_campaign
+                        <th style="width: 80px;" class="required"> utm_campaign
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Campaign Name</strong><br>
-                                Specific name of your marketing campaign. Use consistent naming.
-                                <span class="tooltip-example">Example: summer_sale_2024, black_friday, product_launch, spring_promo</span>
+                                <strong>Campaign name</strong><br>
+                                Specific name of your marketing campaign. Use consistent naming. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: summer_sale_2024, black_friday</span>
+                                <span class="tooltip-example">"Summer Sale" → summer_sale</span>
                             </span>
                         </th>
-                        <th style="width: 120px;">
-                            utm_term
+                        <th style="width: 100px;"> utm_term
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Campaign Term (Optional)</strong><br>
-                                Used mainly for paid advertising to identify keywords.
-                                <span class="tooltip-example">Example: running+shoes, best+laptop, luxury+vacation</span>
+                                <strong>Keyword (optional)</strong><br>
+                                Mainly used for paid advertising to identify keywords. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: running_shoes, best_laptop</span>
+                                <span class="tooltip-example">"Running Shoes" → running_shoes</span>
                             </span>
                         </th>
-                        <th style="width: 120px;">
-                            utm_content
+                        <th style="width: 80px;"> utm_content
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Content/Variation (Optional)</strong><br>
-                                Differentiate similar links or ads within the same campaign.
-                                <span class="tooltip-example">Example: banner_01, text_link, button_blue, header_cta, video_thumbnail</span>
+                                <strong>Content/variant (optional)</strong><br>
+                                Differentiate similar links or ads within the same campaign. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: banner_01, text_link, button_blue</span>
+                                <span class="tooltip-example">"Header CTA" → header_cta</span>
                             </span>
                         </th>
-                        <th style="width: 150px;">
-                            utm_id
+                        <th style="width: 120px;"> utm_id
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Campaign ID (Auto)</strong><br>
-                                Unique campaign identifier. Auto-generated in format YYYYMMDD_XXX.
-                                <span class="tooltip-example">Example: 20240323_001</span>
+                                <strong>Campaign ID (automatic/manual)</strong><br>
+                                Unique campaign identifier. Can be auto-generated (format: YYYYMMDD_XXX) or entered manually if auto-generation is disabled in Settings.
+                                <span class="tooltip-example">Example (auto): 20240323_001</span>
+                                <span class="tooltip-example">Example (manual): my_campaign_2024</span>
                             </span>
                         </th>
-                        <th style="width: 150px;">
-                            utm_source_platform
+                        <th style="width: 80px;" class="col-platform"> utm_source_platform
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Source Platform (Optional)</strong><br>
-                                Specific advertising platform within the source for more precise tracking.
-                                <span class="tooltip-example">Example: facebook_ads, google_ads, instagram_ads, linkedin_ads</span>
+                                <strong>Source platform (optional)</strong><br>
+                                Specific advertising platform within the source. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: facebook_ads, google_ads</span>
+                                <span class="tooltip-example">"LinkedIn Ads" → linkedin_ads</span>
+                                <br><strong style='color: #fb8c00;'>Requires custom setup in GA.</strong>
                             </span>
                         </th>
-                        <th style="width: 150px;">
-                            utm_creative_format
+                        <th style="width: 80px;" class="col-format"> utm_creative_format
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Creative Format (Optional)</strong><br>
-                                Type of ad format or creative material.
-                                <span class="tooltip-example">Example: video, banner, carousel, story, single_image, text_ad</span>
+                                <strong>Creative format (optional)</strong><br>
+                                Type of ad format. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: video, banner, carousel, story</span>
+                                <span class="tooltip-example">"Single Image" → single_image</span>
+                                <br><strong style='color: #fb8c00;'>Requires custom setup in GA.</strong>
                             </span>
                         </th>
-                        <th style="width: 150px;">
-                            utm_marketing_tactic
+                        <th style="width: 80px;" class="col-tactic"> utm_marketing_tactic
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Marketing Tactic (Optional)</strong><br>
-                                Marketing funnel stage or campaign objective.
-                                <span class="tooltip-example">Example: awareness, consideration, conversion, retention, lead_generation</span>
+                                <strong>Marketing tactic (optional)</strong><br>
+                                Marketing funnel phase. Automatically converted to lowercase and spaces replaced with underscores.
+                                <span class="tooltip-example">Example: awareness, consideration, conversion</span>
+                                <span class="tooltip-example">"Brand Awareness" → brand_awareness</span>
+                                <br><strong style='color: #fb8c00;'>Requires custom setup in GA.</strong>
                             </span>
                         </th>
-                        <th style="width: 300px;">
-                            Final UTM URL <span class="auto-badge">AUTO</span>
+                        <th style="width: 100px;"> Final UTM URL <span class="auto-badge">AUTO</span>
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Final UTM Link</strong><br>
-                                Complete URL with added UTM parameters. Auto-generated as you type. Use this link in your campaigns.
+                                <strong>Final UTM link</strong><br>
+                                Complete URL with added UTM parameters. Generated automatically when filling in fields. Use this link in your campaigns.
                             </span>
                         </th>
-                        <th style="width: 100px;">
-                            Status
+                        <th style="width: 60px;"> Status
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Generation Status</strong><br>
+                                <strong>Generation status</strong><br>
                                 🔄 Auto = automatically generated<br>
                                 ❌ Error = validation problem<br>
-                                Waiting = needs required fields
+                                Waiting = waiting for required fields
                             </span>
                         </th>
-                        <th style="width: 80px;">
-                            QR Code
+                        <th style="width: 60px;"> QR Code
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>QR Code</strong><br>
-                                Generate QR code for your UTM link. Download in multiple formats (PNG, JPEG, SVG, EPS).
+                                <strong>QR code</strong><br>
+                                Generate QR code for your UTM link. You can download it in various formats (PNG, JPEG, SVG, EPS). The window allows you to customize the appearance.
                             </span>
                         </th>
-                        <th style="width: 80px;">
-                            Actions
+                        <th style="width: 60px; min-width: 80px;"> Actions
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">
-                                <strong>Row Actions</strong><br>
-                                📋 = Duplicate row<br>
+                                <strong>Row actions</strong><br>
+                                📄 = Copy to clipboard<br>
+                                ➕ = Duplicate row<br>
                                 🗑️ = Delete row
                             </span>
                         </th>
@@ -786,27 +1089,49 @@
             </div>
             <div class="stat">
                 <span class="stat-label">Errors</span>
-                <span class="stat-value" id="errorRows" style="color: #ef4444;">0</span>
+                <span class="stat-value" id="errorRows" style="color: #e53935;">0</span>
             </div>
-        </div>
-
-        <div class="footer">
-            <p>Free Bulk UTM Generator | Made with ❤️ for Marketers | <a href="https://example.com" target="_blank">example.com</a></p>
-            <p style="margin-top: 8px; font-size: 12px;">All data is stored locally in your browser. No data is sent to any server.</p>
         </div>
     </div>
 
-    <!-- QR Code Modal -->
+    <!-- QR Modal -->
     <div id="qrModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>QR Code</h2>
                 <span class="close" onclick="closeQRModal()">&times;</span>
             </div>
-            <div id="qrContainer">
-                <img id="qrImage" src="" alt="QR Code">
-                <p id="qrUrl" style="word-break: break-all; font-size: 12px; color: #6b7280; margin-top: 10px;"></p>
+            <img id="qrImage" src="" alt="QR Code">
+            <div class="qr-settings">
+                <div class="qr-settings-item">
+                    <label for="qrEccLevel">Error correction level:</label>
+                    <select id="qrEccLevel" onchange="updateQRPreview()">
+                        <option value="L">Low (L ~7%)</option>
+                        <option value="M">Medium (M ~15%)</option>
+                        <option value="Q">Quarter (Q ~25%)</option>
+                        <option value="H" selected>High (H ~30%)</option>
+                    </select>
+                </div>
+                <div class="qr-settings-item">
+                    <label for="qrMargin">Margin (px):</label>
+                    <input type="number" id="qrMargin" value="10" min="0" max="50" step="1" onchange="updateQRPreview()">
+                </div>
+                <div class="qr-settings-item">
+                    <label for="qrColorHex">Code color:</label>
+                    <div class="color-input-group">
+                        <input type="color" id="qrColor" value="#000000" onchange="document.getElementById('qrColorHex').value = this.value; updateQRPreview()">
+                        <input type="text" id="qrColorHex" class="hex-input" value="#000000" pattern="#?[0-9a-fA-F]{3,6}" maxlength="7" oninput="handleHexInput(this, 'qrColor')" onchange="updateQRPreview()" onblur="updateQRPreview()" onkeydown="handleHexEnter(event)">
+                    </div>
+                </div>
+                <div class="qr-settings-item">
+                    <label for="qrBgColorHex">Background color:</label>
+                    <div class="color-input-group">
+                        <input type="color" id="qrBgColor" value="#ffffff" onchange="document.getElementById('qrBgColorHex').value = this.value; updateQRPreview()">
+                        <input type="text" id="qrBgColorHex" class="hex-input" value="#ffffff" pattern="#?[0-9a-fA-F]{3,6}" maxlength="7" oninput="handleHexInput(this, 'qrBgColor')" onchange="updateQRPreview()" onblur="updateQRPreview()" onkeydown="handleHexEnter(event)">
+                    </div>
+                </div>
             </div>
+            <p id="qrUrl" style="word-break: break-all; font-size: 12px; color: #666; margin-top: 10px; text-align: center;"></p>
             <div class="download-buttons">
                 <button class="btn-primary" onclick="downloadQR('png')">💾 Download PNG</button>
                 <button class="btn-primary" onclick="downloadQR('jpeg')">💾 Download JPEG</button>
@@ -820,698 +1145,1354 @@
     <div id="helpModal" class="modal help-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📖 Help & Documentation</h2>
+                <h2>📖 Help</h2>
                 <span class="close" onclick="closeHelpModal()">&times;</span>
             </div>
             <div class="help-content">
-                <h3>🚀 QUICK START</h3>
-                <ul>
-                    <li>Click <strong>"Add Row"</strong> to create new entries</li>
-                    <li>Fill in <strong>required fields</strong> (marked with *)</li>
-                    <li>URLs <strong>generate automatically</strong> as you type</li>
-                    <li>QR codes are available immediately after generation</li>
-                </ul>
+                
+                <!-- TABLE OF CONTENTS -->
+                <nav id="help-toc" class="help-toc" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #1e88e5;">
+                    <h3 style="margin-top: 0; color: #1e88e5;">📑 Table of Contents</h3>
+                    <ol style="line-height: 2; margin: 10px 0;">
+                        <li><a href="#help-version">Version and Changelog</a></li>
+                        <li><a href="#help-how-to-use">How to Use UTM Bulk Generator</a></li>
+                        <li><a href="#help-required-fields">Required Fields</a></li>
+                        <li><a href="#help-auto-formatting">Automatic Text Formatting</a></li>
+                        <li><a href="#help-utm-id">Auto-generating utm_id</a></li>
+                        <li><a href="#help-advanced-params">Optional Advanced Parameters</a></li>
+                        <li><a href="#help-quick-fill">Quick Fill</a></li>
+                        <li><a href="#help-export">Export and Backup</a></li>
+                        <li><a href="#help-storage">Data Storage</a></li>
+                        <li><a href="#help-qr">QR Codes</a></li>
+                        <li><a href="#help-autocomplete">Autocomplete</a></li>
+                        <li><a href="#help-data-management">Data Management</a></li>
+                        <li><a href="#help-compatibility">Compatibility and Limitations</a></li>
+                        <li><a href="#help-debugging">Troubleshooting and Debugging</a></li>
+                        <li><a href="#help-tips">Tips and Recommendations</a></li>
+                    </ol>
+                </nav>
 
-                <h3>🔄 REAL-TIME GENERATION</h3>
-                <ul>
-                    <li>UTM URLs generate <strong>automatically while typing</strong></li>
-                    <li>Just fill in the 4 required fields and the URL is created</li>
-                    <li>Any field change updates the URL immediately</li>
-                    <li>No need to click "Generate" button</li>
-                    <li>Use "Regenerate All" to refresh all URLs if needed</li>
-                </ul>
+                <!-- 1. VERSION AND CHANGELOG -->
+                <section id="help-version">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">📋 Version and Changelog</h2>
+                    <p><strong>Current version: <span style="color: #1e88e5;">1.0.0</span></strong> (January 31, 2025)</p>
+                    <details style="margin-bottom: 20px; cursor: pointer;">
+                        <summary style="font-weight: 600; padding: 10px; background: #f5f5f5; border-radius: 4px; user-select: none;">
+                            📜 Show version history
+                        </summary>
+                        <div style="padding: 15px 10px; border-left: 3px solid #1e88e5; margin-top: 10px; background: #fafafa;">
+                            <h4 style="margin-top: 0;">v1.0.0 (January 31, 2025) - Stable Release</h4>
+                            <ul>
+                                <li>✅ Automatic UTM link generation with live preview</li>
+                                <li>✅ Parameter sanitization (lowercase, spaces→underscores)</li>
+                                <li>✅ URL validation with automatic protocol addition</li>
+                                <li>✅ Proper handling of anchors (#) and query parameters</li>
+                                <li>✅ Export to CSV and Excel</li>
+                                <li>✅ QR code generation with settings</li>
+                                <li>✅ Data backup and restore (JSON)</li>
+                                <li>✅ Automatic/manual utm_id generation</li>
+                                <li>✅ Autocomplete with history</li>
+                                <li>✅ Advanced UTM parameters (platform, format, tactic)</li>
+                                <li>✅ Quick fill for empty rows</li>
+                                <li>✅ LocalStorage with problem warnings</li>
+                                <li>✅ Browser compatibility check</li>
+                                <li>✅ Offline indicator</li>
+                                <li>✅ Complete help and tooltips</li>
+                            </ul>
+                        </div>
+                    </details>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>💡 COLUMN TOOLTIPS</h3>
-                <ul>
-                    <li>Hover over <strong>column names</strong> to see help</li>
-                    <li>Look for the <code>?</code> icon</li>
-                    <li>Contains explanations and specific examples</li>
-                </ul>
+                <!-- 2. HOW TO USE -->
+                <section id="help-how-to-use">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">🎯 How to Use UTM Bulk Generator</h2>
+                    <p>This tool helps you create tracked UTM links for your marketing campaigns. All data is stored locally in your browser.</p>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>📋 DUPLICATE ROW</h3>
-                <ul>
-                    <li>Click the <strong>📋 icon</strong> to duplicate a row</li>
-                    <li>All data is copied except Base URL and utm_id</li>
-                    <li>Perfect for similar campaigns with different URLs</li>
-                    <li>New row is automatically highlighted</li>
-                </ul>
+                <!-- 3. REQUIRED FIELDS -->
+                <section id="help-required-fields">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">📋 Required Fields</h2>
+                    <ul>
+                        <li><strong>Base URL:</strong> Enter target address (e.g. <code>example.com</code> or <code>https://example.com/page</code>). Protocol https:// will be added automatically if not provided.</li>
+                        <li><strong>utm_source:</strong> Traffic source (e.g. <code>facebook</code>, <code>google</code>, <code>newsletter</code>)</li>
+                        <li><strong>utm_medium:</strong> Media type (e.g. <code>cpc</code>, <code>email</code>, <code>social</code>)</li>
+                        <li><strong>utm_campaign:</strong> Campaign name (e.g. <code>summer_sale</code>, <code>black_friday</code>)</li>
+                    </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>⚡ QUICK FILL</h3>
-                <ul>
-                    <li>Fill in the <strong>yellow section</strong> at the top</li>
-                    <li>Click <strong>"Apply to All Empty Rows"</strong></li>
-                    <li>Only empty fields will be filled</li>
-                    <li>Great for bulk generation with different URLs</li>
-                </ul>
+                <!-- 4. AUTO FORMATTING -->
+                <section id="help-auto-formatting">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">✏️ Automatic Text Formatting</h2>
+                    <p>All UTM parameters (except Base URL and utm_id) are automatically formatted:</p>
+                    <ul>
+                        <li>🔤 <strong>Convert to lowercase:</strong> "FaceBook" → "facebook"</li>
+                        <li>🔗 <strong>Spaces → underscores:</strong> "Summer Sale" → "summer_sale"</li>
+                        <li>🧹 <strong>Remove invalid characters:</strong> Only letters, numbers, hyphens (-) and underscores (_) are allowed</li>
+                    </ul>
+                    <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; margin: 15px 0; border-radius: 4px;">
+                        <strong>💡 Note:</strong> Changes take effect after finishing typing (Tab or Enter).
+                    </div>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>🔍 AUTOCOMPLETE</h3>
-                <ul>
-                    <li>Start typing in any field</li>
-                    <li>See a list of <strong>previously used values</strong></li>
-                    <li>Navigate with <code>↑↓</code> arrow keys or mouse</li>
-                    <li>Press <code>Enter</code> to select</li>
-                    <li>Press <code>Esc</code> to close</li>
-                    <li>Autocomplete learns from every entered value</li>
-                </ul>
+                <!-- 5. AUTO UTM_ID -->
+                <section id="help-utm-id">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">🔢 Auto-generating utm_id</h2>
+                    <p>In the ⚙️ Settings section, you can enable/disable automatic <code>utm_id</code> generation:</p>
+                    <ul>
+                        <li><strong>✅ Enabled (default):</strong> Generates ID in format <code>YYYYMMDD_XXX</code> (date + sequence number), e.g. <code>20240323_001</code></li>
+                        <li><strong>✍️ Disabled:</strong> You can enter custom ID manually</li>
+                    </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>⌨️ KEYBOARD SHORTCUTS</h3>
-                <ul>
-                    <li><code>Tab</code> - Move to next field</li>
-                    <li><code>Enter</code> in autocomplete - Select item</li>
-                    <li><code>Esc</code> - Close autocomplete</li>
-                    <li><code>↑↓</code> - Navigate in autocomplete</li>
-                </ul>
+                <!-- 6. ADVANCED PARAMS -->
+                <section id="help-advanced-params">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">➕ Optional Advanced Parameters</h2>
+                    <p>In the ⚙️ Settings section, you can show additional columns:</p>
+                    <ul>
+                        <li><strong>utm_source_platform:</strong> Specific advertising platform (e.g. <code>facebook_ads</code>)</li>
+                        <li><strong>utm_creative_format:</strong> Ad format (e.g. <code>video</code>, <code>banner</code>)</li>
+                        <li><strong>utm_marketing_tactic:</strong> Campaign phase (e.g. <code>awareness</code>, <code>conversion</code>)</li>
+                    </ul>
+                    <div style="background: #fff3e0; border-left: 4px solid #fb8c00; padding: 12px; margin: 15px 0; border-radius: 4px;">
+                        <strong>⚠️ Important:</strong> These parameters require custom setup in Google Analytics 4!
+                    </div>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>📱 QR CODES</h3>
-                <ul>
-                    <li>After auto-generation, click <strong>"View"</strong> to see QR code</li>
-                    <li>Download formats available:</li>
-                    <li><strong>PNG</strong> - raster, universal use</li>
-                    <li><strong>JPEG</strong> - raster, photos and presentations</li>
-                    <li><strong>SVG</strong> - vector, scalable for graphics</li>
-                    <li><strong>EPS</strong> - vector, professional printing</li>
-                    <li>All QR codes have <strong>high error correction (30%)</strong></li>
-                </ul>
+                <!-- 7. QUICK FILL -->
+                <section id="help-quick-fill">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">⚡ Quick Fill</h2>
+                    <p>Want to fill all empty rows with the same values? Use the <strong>⚡ Quick Fill</strong> section above the table.</p>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>📊 DATA EXPORT</h3>
-                <ul>
-                    <li><strong>CSV</strong> - Compatible with Excel, Google Sheets</li>
-                    <li><strong>Excel</strong> - Direct .xlsx format with formatting</li>
-                    <li>Includes all columns and Final UTM URLs</li>
-                    <li>Status of each row is included</li>
-                </ul>
+                <!-- 8. EXPORT AND BACKUP -->
+                <section id="help-export">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">📤 Export and Backup</h2>
+                    <ul>
+                        <li><strong>💾 Export CSV:</strong> Download your UTM links to CSV file <span style="color: #4caf50;">(works offline ✅)</span></li>
+                        <li><strong>📊 Export Excel:</strong> Download to XLSX format <span style="color: #ff9800;">(⚠️ requires internet)</span></li>
+                        <li><strong>💼 Backup Data (JSON):</strong> Save complete backup including history <span style="color: #4caf50;">(works offline ✅)</span></li>
+                        <li><strong>📥 Restore Data (JSON):</strong> Load previously saved backup <span style="color: #4caf50;">(works offline ✅)</span></li>
+                    </ul>
+                    <div style="background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 12px; margin: 15px 0; border-radius: 4px;">
+                        <strong>💡 Tip:</strong> If working without connection, use CSV export or JSON backup instead of Excel.
+                    </div>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>💾 AUTOMATIC SAVING</h3>
-                <ul>
-                    <li>Data <strong>saves automatically</strong> to browser</li>
-                    <li>Persists after closing and reopening</li>
-                    <li>Works only in this browser on this device</li>
-                    <li>Includes autocomplete history</li>
-                </ul>
+                <!-- 9. STORAGE -->
+                <section id="help-storage">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">🗂️ Data Storage</h2>
+                    <p>All data is automatically saved to your browser's <strong>localStorage</strong>:</p>
+                    <ul>
+                        <li>✅ Data persists after closing browser</li>
+                        <li>✅ Works offline</li>
+                        <li>⚠️ Data is stored only in this browser</li>
+                        <li>💡 We recommend regular backups (JSON)</li>
+                    </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>✅ REQUIRED FIELDS</h3>
-                <ul>
-                    <li><strong>Base URL</strong> - Must start with http:// or https://</li>
-                    <li><strong>utm_source</strong> - Campaign source</li>
-                    <li><strong>utm_medium</strong> - Media type</li>
-                    <li><strong>utm_campaign</strong> - Campaign name</li>
-                </ul>
+                <!-- 10. QR CODES -->
+                <section id="help-qr">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">📱 QR Codes</h2>
+                    <p>For each generated UTM link, you can create a QR code with custom color settings, margin size, and error correction level. QR code can be downloaded in various formats (PNG, JPEG, SVG, EPS).</p>
+                    <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; margin: 15px 0; border-radius: 4px;">
+                        <strong>⚠️ Important:</strong> QR code generation requires internet connection (uses external API).
+                    </div>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>📝 OPTIONAL FIELDS</h3>
-                <ul>
-                    <li><strong>utm_term</strong> - Keywords (PPC)</li>
-                    <li><strong>utm_content</strong> - Content variation</li>
-                    <li><strong>utm_id</strong> - Auto-generated unique ID</li>
-                    <li><strong>utm_source_platform</strong> - Ad platform</li>
-                    <li><strong>utm_creative_format</strong> - Ad format</li>
-                    <li><strong>utm_marketing_tactic</strong> - Marketing funnel stage</li>
-                </ul>
+                <!-- 11. AUTOCOMPLETE -->
+                <section id="help-autocomplete">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">🔍 Autocomplete</h2>
+                    <p>When typing in fields, history of previously used values is shown. History is saved automatically and can be cleared in ⚙️ Settings → 💾 Data Management.</p>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>💡 BEST PRACTICES</h3>
-                <ul>
-                    <li>Use <strong>consistent naming conventions</strong></li>
-                    <li>Prefer <strong>lowercase letters</strong></li>
-                    <li>Use <strong>underscores</strong> instead of spaces</li>
-                    <li>Test URLs before using in campaigns</li>
-                    <li>Duplicate rows for similar campaigns</li>
-                    <li>Old UTM parameters are automatically cleaned</li>
-                    <li>Anchor links (#) are moved to end of URL</li>
-                </ul>
+                <!-- 12. DATA MANAGEMENT -->
+                <section id="help-data-management">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">🛠️ Data Management</h2>
+                    <ul>
+                        <li><strong>🗑️ Clear Rows:</strong> Deletes all rows (keeps history and settings)</li>
+                        <li><strong>🧹 Clear Autocomplete History:</strong> Deletes only autocomplete history</li>
+                        <li><strong>🔄 Reset Application:</strong> Returns application to completely clean state <span style="color: #e53935;">(⚠️ deletes EVERYTHING!)</span></li>
+                    </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
 
-                <h3>🎯 UTM PARAMETER EXAMPLES</h3>
-                <ul>
-                    <li><strong>Email Newsletter:</strong> source=newsletter, medium=email, campaign=weekly_update</li>
-                    <li><strong>Facebook Ad:</strong> source=facebook, medium=social, campaign=spring_sale</li>
-                    <li><strong>Google Search:</strong> source=google, medium=cpc, campaign=brand_keywords</li>
-                    <li><strong>Instagram Story:</strong> source=instagram, medium=social, campaign=product_launch</li>
-                </ul>
+                <!-- 13. COMPATIBILITY -->
+                <section id="help-compatibility">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">⚠️ Compatibility and Limitations</h2>
+                    
+                    <h3 style="color: #424242; margin-top: 20px;">📱 Supported Browsers</h3>
+                    <ul>
+                        <li><strong>Recommended:</strong> Chrome 90+, Firefox 88+, Edge 90+, Safari 14+</li>
+                        <li><strong>Minimum:</strong> Chrome 49+, Firefox 45+, Edge 14+, Safari 10+</li>
+                        <li>❌ <strong>Not supported:</strong> Internet Explorer (any version)</li>
+                    </ul>
+
+                    <h3 style="color: #424242; margin-top: 20px;">🌐 Features Requiring Internet</h3>
+                    <ul>
+                        <li><strong>📊 Excel Export:</strong> Requires loading external SheetJS library from CDN</li>
+                        <li><strong>📱 QR Codes:</strong> Uses online API for generation (api.qrserver.com)</li>
+                    </ul>
+
+                    <h3 style="color: #424242; margin-top: 20px;">🔒 What Happens with Problems</h3>
+                    <ul>
+                        <li><strong>Old browser:</strong> Red warning at top with problem description</li>
+                        <li><strong>Connection loss:</strong> Orange warning and notice about limited features</li>
+                        <li><strong>Full localStorage:</strong> Warning and recommendation to create backup</li>
+                        <li><strong>Unsupported localStorage:</strong> Data won't be saved between sessions</li>
+                    </ul>
+
+                    <h3 style="color: #424242; margin-top: 20px;">🛡️ What Always Works (even offline)</h3>
+                    <ul>
+                        <li>✅ UTM link generation</li>
+                        <li>✅ URL validation and cleaning</li>
+                        <li>✅ UTM parameter sanitization</li>
+                        <li>✅ CSV export</li>
+                        <li>✅ Saving to localStorage (if supported)</li>
+                        <li>✅ JSON backup and restore</li>
+                        <li>✅ Autocomplete and history</li>
+                    </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
+
+                <!-- 14. DEBUGGING -->
+                <section id="help-debugging">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">🔧 Troubleshooting and Debugging</h2>
+                    
+                    <h3 style="color: #424242; margin-top: 20px;">📊 Developer Console</h3>
+                    <p>All technical information, verification and error messages are logged to the <strong>browser console</strong>. This is useful for problem diagnostics.</p>
+
+                    <h3 style="color: #424242; margin-top: 20px;">🖥️ How to Open Console</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
+                        <div style="background: #f5f5f5; padding: 15px; border-radius: 4px;">
+                            <strong>🪟 Windows/Linux:</strong>
+                            <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                                <li><code>F12</code></li>
+                                <li><code>Ctrl + Shift + I</code></li>
+                                <li><code>Ctrl + Shift + J</code></li>
+                                <li>Right-click → Inspect → Console</li>
+                            </ul>
+                        </div>
+                        <div style="background: #f5f5f5; padding: 15px; border-radius: 4px;">
+                            <strong>🍎 macOS:</strong>
+                            <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                                <li><code>Cmd + Option + I</code></li>
+                                <li><code>Cmd + Option + J</code></li>
+                                <li>Right-click → Inspect Element → Console</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #424242; margin-top: 20px;">🔍 What You'll Find in Console</h3>
+                    <ul>
+                        <li>✅ <strong>Version info:</strong> <code>🚀 UTM Bulk Generator v1.0.0</code></li>
+                        <li>✅ <strong>Compatibility check:</strong> "Browser compatibility check passed!"</li>
+                        <li>✅ <strong>Backup info:</strong> "Restoring backup from version..."</li>
+                        <li>⚠️ <strong>Warnings:</strong> localStorage problems, different backup versions, etc.</li>
+                        <li>❌ <strong>Errors:</strong> Detailed information about URL parsing, validation problems, etc.</li>
+                        <li>📝 <strong>Debug logs:</strong> Technical information about application running</li>
+                    </ul>
+
+                    <h3 style="color: #424242; margin-top: 20px;">🛠️ Common Problems and Solutions</h3>
+                    
+                    <details style="margin: 10px 0; cursor: pointer;">
+                        <summary style="font-weight: 600; padding: 10px; background: #f5f5f5; border-radius: 4px; user-select: none;">
+                            ❌ Data not saving or backup not loading
+                        </summary>
+                        <div style="padding: 15px; border-left: 3px solid #e53935; margin-top: 5px; background: #ffebee;">
+                            <p><strong>Possible causes:</strong></p>
+                            <ul>
+                                <li>LocalStorage is full or blocked</li>
+                                <li>Using private mode (Incognito)</li>
+                                <li>Browser blocks localStorage for local files</li>
+                            </ul>
+                            <p><strong>Solutions:</strong></p>
+                            <ul>
+                                <li>Open console (F12) and look for red errors</li>
+                                <li>Check if orange warning is displayed at top</li>
+                                <li>Clear browser data or use different browser</li>
+                                <li>Use JSON backups for data transfer</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details style="margin: 10px 0; cursor: pointer;">
+                        <summary style="font-weight: 600; padding: 10px; background: #f5f5f5; border-radius: 4px; user-select: none;">
+                            ❌ URL not generating or validation error
+                        </summary>
+                        <div style="padding: 15px; border-left: 3px solid #ff9800; margin-top: 5px; background: #fff3e0;">
+                            <p><strong>Possible causes:</strong></p>
+                            <ul>
+                                <li>Invalid URL format (missing domain or TLD)</li>
+                                <li>Disallowed protocol (ftp://, javascript:, etc.)</li>
+                                <li>Special characters in URL</li>
+                            </ul>
+                            <p><strong>Solutions:</strong></p>
+                            <ul>
+                                <li>Open console and check URL-related warnings</li>
+                                <li>Make sure URL contains domain with TLD (e.g. <code>example.com</code>)</li>
+                                <li>Protocol https:// will be added automatically if missing</li>
+                                <li>Console will show: "Could not parse URL for cleaning: ..."</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details style="margin: 10px 0; cursor: pointer;">
+                        <summary style="font-weight: 600; padding: 10px; background: #f5f5f5; border-radius: 4px; user-select: none;">
+                            ❌ QR code or Excel export not working
+                        </summary>
+                        <div style="padding: 15px; border-left: 3px solid #1e88e5; margin-top: 5px; background: #e3f2fd;">
+                            <p><strong>Possible causes:</strong></p>
+                            <ul>
+                                <li>You're offline (no internet connection)</li>
+                                <li>External API or library didn't load</li>
+                                <li>Third-party blocking (AdBlock, firewall)</li>
+                            </ul>
+                            <p><strong>Solutions:</strong></p>
+                            <ul>
+                                <li>Check internet connection</li>
+                                <li>Look in console for red errors (e.g. "Failed to load resource")</li>
+                                <li>Temporarily disable AdBlock or other extensions</li>
+                                <li>Use CSV export (works offline) instead of Excel</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details style="margin: 10px 0; cursor: pointer;">
+                        <summary style="font-weight: 600; padding: 10px; background: #f5f5f5; border-radius: 4px; user-select: none;">
+                            ❌ Application is slow or unresponsive
+                        </summary>
+                        <div style="padding: 15px; border-left: 3px solid #9c27b0; margin-top: 5px; background: #f3e5f5;">
+                            <p><strong>Possible causes:</strong></p>
+                            <ul>
+                                <li>Too many rows (hundreds)</li>
+                                <li>Large autocomplete history</li>
+                                <li>Full localStorage</li>
+                            </ul>
+                            <p><strong>Solutions:</strong></p>
+                            <ul>
+                                <li>Export data and delete old rows</li>
+                                <li>Clear autocomplete history (⚙️ Settings → Clear history)</li>
+                                <li>Create backup and reset application</li>
+                                <li>In console you can check data size: <code>localStorage</code></li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <h3 style="color: #424242; margin-top: 20px;">💡 Debugging Tips</h3>
+                    <ul>
+                        <li>🔴 <strong>Red messages</strong> = critical errors that stop functionality</li>
+                        <li>🟡 <strong>Yellow messages</strong> = warnings, app works but something isn't ideal</li>
+                        <li>⚪ <strong>Regular messages</strong> = progress information (loading, saving, etc.)</li>
+                        <li>When reporting problems, <strong>always attach console screenshot</strong></li>
+                        <li>Text from console can be copied (right-click → Copy message)</li>
+                    </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
+
+                <!-- 15. TIPS -->
+                <section id="help-tips">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">💡 Tips and Recommendations</h2>
+                    <ul>
+                        <li>✅ Use <strong>consistent naming</strong> across campaigns</li>
+                        <li>✅ Write values in <strong>lowercase</strong> without diacritics</li>
+                        <li>✅ Use <strong>underscores</strong> instead of spaces (happens automatically)</li>
+                        <li>✅ For long-term campaigns use <strong>utm_id</strong> for better tracking</li>
+                        <li>✅ Regularly <strong>backup your data</strong> to JSON file</li>
+                    </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
+
             </div>
         </div>
     </div>
+    
+    <input type="file" id="restoreFile" accept=".json" style="display: none;">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <script>
-        let rows = [];
-        let rowCounter = 0;
+        // === APPLICATION VERSION ===
+        const APP_VERSION = '1.0.0';
+        const APP_BUILD_DATE = '2025-01-31';
+        const STORAGE_VERSION = '1'; // For future data migrations
+
+        // Log version to console
+        console.log(`%c🚀 UTM Bulk Generator v${APP_VERSION}`, 'color: #1e88e5; font-size: 16px; font-weight: bold;');
+        console.log(`📅 Build: ${APP_BUILD_DATE}`);
+        console.log(`💾 Storage version: ${STORAGE_VERSION}`);
+        // === END VERSION INFO ===
+
+        // === BROWSER COMPATIBILITY CHECK ===
+        (function checkBrowserCompatibility() {
+            const incompatibilities = [];
+            
+            // 1. LocalStorage
+            if (typeof(Storage) === "undefined") {
+                incompatibilities.push("LocalStorage not supported");
+            }
+            
+            // 2. FileReader API (for backup/restore)
+            if (typeof(FileReader) === "undefined") {
+                incompatibilities.push("FileReader API not supported (backup restore won't work)");
+            }
+            
+            // 3. URL API (for validation)
+            try {
+                new URL("https://example.com");
+            } catch(e) {
+                incompatibilities.push("URL API not supported (URL validation won't work)");
+            }
+            
+            // 4. Set object (for autocomplete)
+            if (typeof(Set) === "undefined") {
+                incompatibilities.push("Set object not supported (autocomplete won't work)");
+            }
+            
+            // 5. ES6 features
+            try {
+                eval("const test = () => {};");
+                eval("const {test} = {test: 1};");
+                eval("`template string`");
+            } catch(e) {
+                incompatibilities.push("Modern JavaScript (ES6) not supported");
+            }
+            
+            // 6. Fetch API (for future extensions)
+            if (typeof(fetch) === "undefined") {
+                incompatibilities.push("Fetch API not supported (limited functionality)");
+            }
+            
+            // If there are problems, show warning
+            if (incompatibilities.length > 0) {
+                const warningDiv = document.createElement('div');
+                warningDiv.id = 'browserCompatWarning';
+                warningDiv.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    background: #d32f2f;
+                    color: white;
+                    padding: 15px 20px;
+                    text-align: center;
+                    font-weight: 600;
+                    z-index: 999999;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                `;
+                
+                warningDiv.innerHTML = `
+                    <div style="max-width: 1200px; margin: 0 auto;">
+                        <strong>⚠️ Your browser is not fully compatible with this application!</strong><br>
+                        <span style="font-size: 13px; opacity: 0.95;">
+                            Issues: ${incompatibilities.join(', ')}
+                        </span><br>
+                        <span style="font-size: 12px; margin-top: 5px; display: inline-block;">
+                            We recommend: Chrome 90+, Firefox 88+, Edge 90+, Safari 14+
+                        </span>
+                    </div>
+                `;
+                
+                // Add warning as soon as DOM is ready
+                if (document.body) {
+                    document.body.insertBefore(warningDiv, document.body.firstChild);
+                } else {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.insertBefore(warningDiv, document.body.firstChild);
+                    });
+                }
+                
+                console.error("Browser compatibility issues detected:", incompatibilities);
+                
+                // Log browser info
+                console.log("User Agent:", navigator.userAgent);
+            } else {
+                console.log("✅ Browser compatibility check passed!");
+            }
+        })();
+        // === END BROWSER COMPATIBILITY CHECK ===
+
+        // === OFFLINE/ONLINE INDICATOR ===
+        (function setupNetworkMonitoring() {
+            let isOnline = navigator.onLine;
+            
+            function showNetworkStatus(online) {
+                // Remove old warning (if exists)
+                const oldWarning = document.getElementById('networkWarning');
+                if (oldWarning) oldWarning.remove();
+                
+                // If offline, show warning
+                if (!online) {
+                    const warningDiv = document.createElement('div');
+                    warningDiv.id = 'networkWarning';
+                    warningDiv.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        background: #ff9800;
+                        color: white;
+                        padding: 10px 20px;
+                        text-align: center;
+                        font-weight: 600;
+                        z-index: 99998;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                        font-size: 14px;
+                    `;
+                    
+                    warningDiv.innerHTML = `
+                        <div style="max-width: 1200px; margin: 0 auto;">
+                            📡 <strong>You're offline</strong> – Excel export and QR codes won't work. Other features work normally.
+                        </div>
+                    `;
+                    
+                    // Add below browser compatibility warning (if exists)
+                    const compatWarning = document.getElementById('browserCompatWarning');
+                    if (compatWarning && document.body.contains(compatWarning)) {
+                        compatWarning.parentNode.insertBefore(warningDiv, compatWarning.nextSibling);
+                    } else if (document.body) {
+                        document.body.insertBefore(warningDiv, document.body.firstChild);
+                    }
+                }
+            }
+            
+            // Check on load
+            if (document.body) {
+                showNetworkStatus(isOnline);
+            } else {
+                document.addEventListener('DOMContentLoaded', function() {
+                    showNetworkStatus(isOnline);
+                });
+            }
+            
+            // Listen for network state changes
+            window.addEventListener('online', function() {
+                isOnline = true;
+                showNetworkStatus(true);
+                showAlert('✅ Connection restored! Excel export and QR codes are available again.', 'success');
+            });
+            
+            window.addEventListener('offline', function() {
+                isOnline = false;
+                showNetworkStatus(false);
+                showAlert('📡 Connection lost. Excel export and QR codes won\'t work.', 'info');
+            });
+        })();
+        // === END OFFLINE/ONLINE INDICATOR ===
+
+        // --- Global Variables ---
+        let rows = []; // Array of objects representing table rows
+        let rowCounter = 0; // Global counter for unique row IDs
+        // Object holding autocomplete history (as Set for uniqueness)
         let autocompleteData = {
-            utm_source: new Set(['google', 'facebook', 'instagram', 'linkedin', 'twitter', 'newsletter', 'youtube']),
-            utm_medium: new Set(['cpc', 'social', 'email', 'organic', 'referral', 'display', 'video', 'affiliate']),
+            utm_source: new Set(),
+            utm_medium: new Set(),
             utm_campaign: new Set(),
             utm_term: new Set(),
             utm_content: new Set(),
-            utm_source_platform: new Set(['facebook_ads', 'google_ads', 'instagram_ads', 'linkedin_ads', 'twitter_ads']),
-            utm_creative_format: new Set(['video', 'banner', 'carousel', 'story', 'single_image', 'text_ad']),
-            utm_marketing_tactic: new Set(['awareness', 'consideration', 'conversion', 'retention', 'lead_generation'])
+            utm_source_platform: new Set(),
+            utm_creative_format: new Set(),
+            utm_marketing_tactic: new Set()
         };
-        let currentAutocompleteInput = null;
-        let currentQRUrlForDownload = '';
+        let currentAutocompleteInput = null; // Reference to input with active autocomplete
+        let currentQRUrlForDownload = ''; // Base URL for QR generation (without QR parameters)
+        
+        // Open developer console
+        function openDevConsole() {
+            alert('💡 To open Developer Console:\n\n' +
+                '🪟 Windows/Linux: F12 or Ctrl+Shift+I\n' +
+                '🍎 macOS: Cmd+Option+I\n\n' +
+                'Then go to the "Console" tab.\n\n' +
+                'In the console you\'ll find all technical information, warnings and error messages.');
+        }
 
+        // localStorage keys (constants for clarity)
+        const STORAGE_KEYS = {
+            rows: 'utmgenUtmRows',
+            counter: 'utmgenUtmRowCounter',
+            autocomplete: 'utmgenUtmAutocomplete',
+            toggleId: 'utmgenToggleUtmId',
+            togglePlatform: 'utmgenTogglePlatform',
+            toggleFormat: 'utmgenToggleFormat',
+            toggleTactic: 'utmgenToggleTactic'
+        };
+
+        // --- Initialization after DOM load ---
         document.addEventListener('DOMContentLoaded', function() {
-            loadFromLocalStorage();
-            if (rows.length === 0) {
+            loadFromLocalStorage(); // Load saved data
+            if (rows.length === 0) { // If nothing was saved, add default rows
                 addRow();
                 addRow();
                 addRow();
             }
-            updateStats();
+            updateStats(); // Update statistics
+            // Attach listener for file input (restore from backup)
+            document.getElementById('restoreFile').addEventListener('change', handleRestoreFileSelect);
+            document.body.dataset.loaded = "true"; // Mark that loading finished
+            toggleUtmIdInputsUI(document.getElementById('toggleUtmId').checked); // Set UI for utm_id
+            
+            // Add listeners for Enter in hex inputs of QR modal
+            document.getElementById('qrColorHex').addEventListener('keydown', handleHexEnter);
+            document.getElementById('qrBgColorHex').addEventListener('keydown', handleHexEnter);
         });
 
+        // --- UI and Settings Management ---
+
+        // Visually toggles editability of all utm_id fields in table
+        function toggleUtmIdInputsUI(isAuto) {
+            const utmIdInputs = document.querySelectorAll('input[data-field="utmId"]');
+            utmIdInputs.forEach(input => {
+                input.readOnly = isAuto;
+                input.placeholder = isAuto ? "Auto" : "Enter ID";
+                if (isAuto) {
+                    input.style.backgroundColor = "#f5f5f5";
+                    input.style.cursor = "not-allowed";
+                } else {
+                    input.style.backgroundColor = "white";
+                    input.style.cursor = "text";
+                    input.placeholder = "Enter ID";
+                }
+            });
+        }
+        
+        // Function called when "Auto-generate utm_id" checkbox changes
+        function toggleUtmIdGeneration() {
+            const isAuto = document.getElementById('toggleUtmId').checked;
+            toggleUtmIdInputsUI(isAuto);
+            
+            if (!isAuto) {
+                // Simply clear ALL utm_id fields
+                rows.forEach(row => {
+                    row.utmId = ''; // Clear data
+                    const tr = document.getElementById(`row-${row.id}`);
+                    if (tr) {
+                        const input = tr.querySelector('input[data-field="utmId"]');
+                        if (input) {
+                            input.value = ''; // Clear UI
+                        }
+                    }
+                });
+                regenerateAllUrls(); // Regenerate URLs without utm_id
+            } else {
+                regenerateAll(); // Regenerate everything including new utm_id
+            }
+            
+            saveToLocalStorage();
+        }
+        
+        // Updates visibility of advanced columns based on checkboxes
+        function updateColumnVisibility() {
+            document.body.classList.toggle('show-platform', document.getElementById('togglePlatform').checked);
+            document.body.classList.toggle('show-format', document.getElementById('toggleFormat').checked);
+            document.body.classList.toggle('show-tactic', document.getElementById('toggleTactic').checked);
+            
+            // Regenerate URLs and save settings, only if page was already loaded
+            if (document.body.dataset.loaded === "true") {
+                regenerateAll(); // regenerateAll calls saveToLocalStorage
+            }
+        }
+
+        // --- Table Row Manipulation ---
+
+        // Adds new row to table and to `rows` array
         function addRow(prefillData = null) {
-            rowCounter++;
+            rowCounter++; // Increment global counter for unique ID
             const tbody = document.getElementById('tableBody');
             const tr = document.createElement('tr');
             tr.id = `row-${rowCounter}`;
             tr.dataset.rowId = rowCounter;
-            tr.dataset.displayNumber = getNextDisplayNumber();
+            tr.dataset.displayNumber = getNextDisplayNumber(); // Get current sequence number
+            const isUtmIdAuto = document.getElementById('toggleUtmId').checked;
 
+            // Create HTML for new row
             tr.innerHTML = `
                 <td class="row-number">${tr.dataset.displayNumber}</td>
-                <td><input type="url" data-field="baseUrl" placeholder="https://example.com" oninput="autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td><input type="url" data-field="baseUrl" placeholder="https://www.example.com" oninput="autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
                 <td class="autocomplete-wrapper"><input type="text" data-field="utmSource" data-autocomplete="utm_source" placeholder="facebook" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
                 <td class="autocomplete-wrapper"><input type="text" data-field="utmMedium" data-autocomplete="utm_medium" placeholder="social" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
                 <td class="autocomplete-wrapper"><input type="text" data-field="utmCampaign" data-autocomplete="utm_campaign" placeholder="summer_sale" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
-                <td class="autocomplete-wrapper"><input type="text" data-field="utmTerm" data-autocomplete="utm_term" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
-                <td class="autocomplete-wrapper"><input type="text" data-field="utmContent" data-autocomplete="utm_content" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
-                <td><input type="text" data-field="utmId" placeholder="Auto" readonly style="background: #f9fafb;"></td>
-                <td class="autocomplete-wrapper"><input type="text" data-field="utmSourcePlatform" data-autocomplete="utm_source_platform" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
-                <td class="autocomplete-wrapper"><input type="text" data-field="utmCreativeFormat" data-autocomplete="utm_creative_format" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
-                <td class="autocomplete-wrapper"><input type="text" data-field="utmMarketingTactic" data-autocomplete="utm_marketing_tactic" placeholder="" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmTerm" data-autocomplete="utm_term" placeholder="keywords" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper"><input type="text" data-field="utmContent" data-autocomplete="utm_content" placeholder="banner_01" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td><input type="text" data-field="utmId" placeholder="${isUtmIdAuto ? 'Auto' : 'Enter ID'}" ${isUtmIdAuto ? 'readonly style="background: #f5f5f5; cursor: not-allowed;"' : 'style="background: white; cursor: text;"'} oninput="autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper col-platform"><input type="text" data-field="utmSourcePlatform" data-autocomplete="utm_source_platform" placeholder="facebook_ads" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper col-format"><input type="text" data-field="utmCreativeFormat" data-autocomplete="utm_creative_format" placeholder="video" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
+                <td class="autocomplete-wrapper col-tactic"><input type="text" data-field="utmMarketingTactic" data-autocomplete="utm_marketing_tactic" placeholder="awareness" oninput="handleAutocomplete(this, ${rowCounter}); autoGenerateUTM(${rowCounter})" onchange="updateRow(${rowCounter})"></td>
                 <td class="output-cell" data-field="finalUrl">-</td>
-                <td class="status-pending" data-field="status">Waiting</td>
+                <td class="status-pending" data-field="status">Waiting for data</td>
                 <td><span data-field="qr">-</span></td>
                 <td>
                     <div class="action-btns">
-                        <button class="icon-btn duplicate" onclick="duplicateRow(${rowCounter})" title="Duplicate row">📋</button>
+                        <button class="icon-btn copy" onclick="copyToClipboard(${rowCounter})" title="Copy Final URL">📄</button>
+                        <button class="icon-btn duplicate" onclick="duplicateRow(${rowCounter})" title="Duplicate row">➕</button>
                         <button class="icon-btn delete" onclick="deleteRow(${rowCounter})" title="Delete row">🗑️</button>
                     </div>
                 </td>
             `;
 
-            tbody.appendChild(tr);
+            tbody.appendChild(tr); // Add row to DOM
             
+            // Create object for row data
             const newRow = {
                 id: rowCounter,
-                baseUrl: '',
-                utmSource: '',
-                utmMedium: '',
-                utmCampaign: '',
-                utmTerm: '',
-                utmContent: '',
-                utmId: '',
-                utmSourcePlatform: '',
-                utmCreativeFormat: '',
-                utmMarketingTactic: '',
-                finalUrl: '',
-                status: 'pending',
-                qrUrl: ''
+                baseUrl: '', utmSource: '', utmMedium: '', utmCampaign: '', utmTerm: '',
+                utmContent: '', utmId: '', utmSourcePlatform: '', utmCreativeFormat: '',
+                utmMarketingTactic: '', finalUrl: '', status: 'pending', qrUrl: ''
             };
 
+            // If we have prefill data (e.g. from duplication or restore)
             if (prefillData) {
                 Object.keys(prefillData).forEach(key => {
-                    if (key !== 'id' && key !== 'finalUrl' && key !== 'status' && key !== 'qrUrl' && key !== 'utmId') {
+                    if (newRow.hasOwnProperty(key) && key !== 'id') {
                         newRow[key] = prefillData[key];
-                        const input = tr.querySelector(`input[data-field="${key}"]`);
-                        if (input) input.value = prefillData[key];
                     }
                 });
-                setTimeout(() => autoGenerateUTM(rowCounter), 100);
+                
+                // Fill inputs with values from prefillData
+                Object.keys(newRow).forEach(key => {
+                    if (key !== 'id') {
+                        const input = tr.querySelector(`input[data-field="${key}"]`);
+                        if (key === 'utmId') {
+                            // Set value only if auto-generation is OFF
+                            if (!isUtmIdAuto && input) {
+                                input.value = newRow[key] || '';
+                            }
+                        } else if (input && !input.readOnly) {
+                            input.value = newRow[key] || '';
+                        }
+                    }
+                });
+                // Trigger URL generation after short pause
+                setTimeout(() => autoGenerateUTM(rowCounter), 50);
             }
 
-            rows.push(newRow);
-            updateStats();
-            saveToLocalStorage();
+            // Add row data to global array (if not already there - safeguard for restore)
+            if (!rows.some(r => r.id === newRow.id)) {
+                rows.push(newRow);
+            }
             
-            return rowCounter;
+            updateStats(); // Update statistics
+            saveToLocalStorage(); // Save changes
+            
+            return rowCounter; // Return ID of new row
         }
 
+        // Returns next sequence number for row in table
         function getNextDisplayNumber() {
             const tbody = document.getElementById('tableBody');
             const existingRows = tbody.querySelectorAll('tr');
             return existingRows.length + 1;
         }
 
+        // Renumbers all rows in table and updates `rowCounter`
         function renumberAllRows() {
             const tbody = document.getElementById('tableBody');
             const existingRows = tbody.querySelectorAll('tr');
-            
+            let maxId = 0;
+            const shouldGenerateUtmId = document.getElementById('toggleUtmId').checked;
+
             existingRows.forEach((tr, index) => {
                 const displayNumber = index + 1;
-                tr.dataset.displayNumber = displayNumber;
+                tr.dataset.displayNumber = displayNumber; // Store number in attribute
                 const numberCell = tr.querySelector('.row-number');
                 if (numberCell) {
-                    numberCell.textContent = displayNumber;
+                    numberCell.textContent = displayNumber; // Display number in cell
                 }
                 
                 const rowId = parseInt(tr.dataset.rowId);
+                maxId = Math.max(maxId, rowId);
+                
+                // Find corresponding row in data
                 const row = rows.find(r => r.id === rowId);
-                if (row && row.utmCampaign) {
-                    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-                    row.utmId = `${date}_${String(displayNumber).padStart(3, '0')}`;
+                
+                // If auto utm_id is enabled, regenerate based on new position
+                if (shouldGenerateUtmId && row) {
+                    const newUtmId = generateUtmId(displayNumber);
+                    row.utmId = newUtmId;
+                    
                     const utmIdInput = tr.querySelector('input[data-field="utmId"]');
-                    if (utmIdInput) {
-                        utmIdInput.value = row.utmId;
-                    }
-                    if (row.finalUrl) {
-                        autoGenerateUTM(rowId);
+                    if (utmIdInput && utmIdInput.readOnly) {
+                        utmIdInput.value = newUtmId;
                     }
                 }
             });
+
+            rowCounter = maxId; // Update global counter
         }
 
-        function autoGenerateUTM(rowId) {
-            const tr = document.getElementById(`row-${rowId}`);
-            if (!tr) return;
-
-            const row = rows.find(r => r.id === rowId);
-            if (!row) return;
-
-            const inputs = tr.querySelectorAll('input[data-field]');
-            inputs.forEach(input => {
-                const field = input.dataset.field;
-                const value = input.value.trim();
-                row[field] = value;
-                
-                const autocompleteField = input.dataset.autocomplete;
-                if (value && autocompleteField && autocompleteData[autocompleteField]) {
-                    autocompleteData[autocompleteField].add(value);
-                }
-            });
-
-            if (row.utmCampaign) {
-                const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-                const displayNumber = tr.dataset.displayNumber || getNextDisplayNumber();
-                row.utmId = `${date}_${String(displayNumber).padStart(3, '0')}`;
-                tr.querySelector('input[data-field="utmId"]').value = row.utmId;
-            }
-
-            if (!row.baseUrl || !row.utmSource || !row.utmMedium || !row.utmCampaign) {
-                const finalUrlCell = tr.querySelector('[data-field="finalUrl"]');
-                const statusCell = tr.querySelector('[data-field="status"]');
-                const qrCell = tr.querySelector('[data-field="qr"]');
-                
-                finalUrlCell.textContent = '-';
-                statusCell.textContent = 'Waiting for data';
-                statusCell.className = 'status-pending';
-                qrCell.textContent = '-';
-                
-                row.finalUrl = '';
-                row.status = 'pending';
-                row.qrUrl = '';
-                return;
-            }
-
-            if (!validateURL(row.baseUrl)) {
-                row.status = 'error';
-                row.finalUrl = 'Invalid URL';
-                updateRowUI(tr, row);
-                return;
-            }
-
-            tr.classList.add('generating');
-            setTimeout(() => tr.classList.remove('generating'), 300);
-
-            const cleanUrl = cleanURL(row.baseUrl);
-            const params = new URLSearchParams();
-            
-            if (row.utmSource) params.set('utm_source', row.utmSource);
-            if (row.utmMedium) params.set('utm_medium', row.utmMedium);
-            if (row.utmCampaign) params.set('utm_campaign', row.utmCampaign);
-            if (row.utmTerm) params.set('utm_term', row.utmTerm);
-            if (row.utmContent) params.set('utm_content', row.utmContent);
-            if (row.utmId) params.set('utm_id', row.utmId);
-            if (row.utmSourcePlatform) params.set('utm_source_platform', row.utmSourcePlatform);
-            if (row.utmCreativeFormat) params.set('utm_creative_format', row.utmCreativeFormat);
-            if (row.utmMarketingTactic) params.set('utm_marketing_tactic', row.utmMarketingTactic);
-
-            const separator = cleanUrl.includes('?') ? '&' : '?';
-            row.finalUrl = cleanUrl + separator + params.toString();
-
-            const anchorMatch = row.baseUrl.match(/#.+$/);
-            if (anchorMatch) {
-                row.finalUrl += anchorMatch[0];
-            }
-
-            row.qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&data=${encodeURIComponent(row.finalUrl)}`;
-            row.status = 'auto';
-            
-            updateRowUI(tr, row);
-            updateStats();
-            saveToLocalStorage();
-        }
-
+        // Duplicates row
         function duplicateRow(rowId) {
             const row = rows.find(r => r.id === rowId);
             if (!row) return;
-
             const newRowData = { ...row };
             delete newRowData.id;
             delete newRowData.finalUrl;
             delete newRowData.status;
             delete newRowData.qrUrl;
-            delete newRowData.utmId;
-
-            const newRowId = addRow(newRowData);
+            // Don't copy utmId if auto-generation is OFF
+            if (!document.getElementById('toggleUtmId').checked) {
+                delete newRowData.utmId;
+            }
+            // newRowData.baseUrl = ''; // Don't copy Base URL (commented out - optional)
+            const newRowId = addRow(newRowData); // Add new row with data
             
+            // Highlight and focus on new row
             const newTr = document.getElementById(`row-${newRowId}`);
             if (newTr) {
                 newTr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                newTr.style.background = '#dbeafe';
-                setTimeout(() => {
-                    newTr.style.background = '';
-                }, 1000);
+                newTr.style.background = '#e3f2fd';
+                setTimeout(() => { newTr.style.background = ''; }, 1000);
+                const baseUrlInput = newTr.querySelector('input[data-field="baseUrl"]');
+                if (baseUrlInput) { baseUrlInput.focus(); }
             }
-
-            showAlert('Row duplicated successfully', 'success');
+            showAlert('Row duplicated', 'success');
         }
 
-        function handleAutocomplete(input, rowId) {
-            const field = input.dataset.autocomplete;
-            const value = input.value.toLowerCase();
+        // Deletes row from table and from `rows` array
+        function deleteRow(rowId) {
+            if (!confirm('Do you really want to delete this row?')) return;
+            
+            // Remove from DOM
+            const tr = document.getElementById(`row-${rowId}`);
+            if (tr) {
+                tr.remove();
+            }
+            
+            // Remove from data array
+            rows = rows.filter(r => r.id !== rowId);
+            
+            renumberAllRows(); // Renumber remaining rows
+            updateStats(); // Update statistics
+            saveToLocalStorage(); // Save changes
+            
+            showAlert('Row deleted', 'success');
+        }
 
-            closeAllAutocomplete();
+        // Updates row data from input values
+        function updateRow(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row) return;
+            
+            const tr = document.getElementById(`row-${rowId}`);
+            if (!tr) return;
+            
+            // Read all input values
+            const inputs = tr.querySelectorAll('input[data-field]');
+            inputs.forEach(input => {
+                const field = input.dataset.field;
+                if (field && row.hasOwnProperty(field)) {
+                    row[field] = input.value.trim();
+                }
+            });
+            
+            // Save to autocomplete history (except baseUrl and utmId)
+            Object.keys(row).forEach(key => {
+                if (autocompleteData.hasOwnProperty(key) && row[key]) {
+                    autocompleteData[key].add(row[key]);
+                }
+            });
+            
+            saveToLocalStorage();
+        }
 
-            if (!value || value.length < 1) return;
+        // --- URL Generation ---
 
-            const items = Array.from(autocompleteData[field] || []);
-            const filtered = items.filter(item => 
-                item.toLowerCase().includes(value)
-            );
+        // Auto-generates UTM URL for given row
+        function autoGenerateUTM(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row) return;
+            
+            const tr = document.getElementById(`row-${rowId}`);
+            if (!tr) return;
+            
+            // Add visual effect
+            tr.classList.add('generating');
+            setTimeout(() => tr.classList.remove('generating'), 300);
+            
+            // Read current values from inputs
+            const baseUrlInput = tr.querySelector('input[data-field="baseUrl"]');
+            const utmSourceInput = tr.querySelector('input[data-field="utmSource"]');
+            const utmMediumInput = tr.querySelector('input[data-field="utmMedium"]');
+            const utmCampaignInput = tr.querySelector('input[data-field="utmCampaign"]');
+            const utmTermInput = tr.querySelector('input[data-field="utmTerm"]');
+            const utmContentInput = tr.querySelector('input[data-field="utmContent"]');
+            const utmIdInput = tr.querySelector('input[data-field="utmId"]');
+            const utmSourcePlatformInput = tr.querySelector('input[data-field="utmSourcePlatform"]');
+            const utmCreativeFormatInput = tr.querySelector('input[data-field="utmCreativeFormat"]');
+            const utmMarketingTacticInput = tr.querySelector('input[data-field="utmMarketingTactic"]');
+            
+            // Update row data
+            row.baseUrl = baseUrlInput ? baseUrlInput.value.trim() : '';
+            row.utmSource = utmSourceInput ? utmSourceInput.value.trim() : '';
+            row.utmMedium = utmMediumInput ? utmMediumInput.value.trim() : '';
+            row.utmCampaign = utmCampaignInput ? utmCampaignInput.value.trim() : '';
+            row.utmTerm = utmTermInput ? utmTermInput.value.trim() : '';
+            row.utmContent = utmContentInput ? utmContentInput.value.trim() : '';
+            row.utmSourcePlatform = utmSourcePlatformInput ? utmSourcePlatformInput.value.trim() : '';
+            row.utmCreativeFormat = utmCreativeFormatInput ? utmCreativeFormatInput.value.trim() : '';
+            row.utmMarketingTactic = utmMarketingTacticInput ? utmMarketingTacticInput.value.trim() : '';
+            
+            // Handle utm_id (auto or manual)
+            const isUtmIdAuto = document.getElementById('toggleUtmId').checked;
+            if (isUtmIdAuto) {
+                // Auto-generate utm_id based on row position
+                const displayNumber = parseInt(tr.dataset.displayNumber);
+                row.utmId = generateUtmId(displayNumber);
+                if (utmIdInput) {
+                    utmIdInput.value = row.utmId;
+                }
+            } else {
+                // Manual utm_id from input
+                row.utmId = utmIdInput ? utmIdInput.value.trim() : '';
+            }
+            
+            // Check required fields
+            if (!row.baseUrl || !row.utmSource || !row.utmMedium || !row.utmCampaign) {
+                row.finalUrl = '';
+                row.status = 'pending';
+                updateRowUI(rowId);
+                saveToLocalStorage();
+                return;
+            }
+            
+            // Validate and clean base URL
+            const cleanedBaseUrl = cleanUrl(row.baseUrl);
+            if (!cleanedBaseUrl) {
+                row.finalUrl = '';
+                row.status = 'error';
+                updateRowUI(rowId);
+                saveToLocalStorage();
+                return;
+            }
+            
+            // Build UTM parameters
+            const params = new URLSearchParams();
+            params.append('utm_source', sanitizeUtmParam(row.utmSource));
+            params.append('utm_medium', sanitizeUtmParam(row.utmMedium));
+            params.append('utm_campaign', sanitizeUtmParam(row.utmCampaign));
+            
+            if (row.utmTerm) params.append('utm_term', sanitizeUtmParam(row.utmTerm));
+            if (row.utmContent) params.append('utm_content', sanitizeUtmParam(row.utmContent));
+            if (row.utmId) params.append('utm_id', sanitizeUtmParam(row.utmId));
+            
+            // Advanced parameters (if visible)
+            if (document.getElementById('togglePlatform').checked && row.utmSourcePlatform) {
+                params.append('utm_source_platform', sanitizeUtmParam(row.utmSourcePlatform));
+            }
+            if (document.getElementById('toggleFormat').checked && row.utmCreativeFormat) {
+                params.append('utm_creative_format', sanitizeUtmParam(row.utmCreativeFormat));
+            }
+            if (document.getElementById('toggleTactic').checked && row.utmMarketingTactic) {
+                params.append('utm_marketing_tactic', sanitizeUtmParam(row.utmMarketingTactic));
+            }
+            
+            // Construct final URL
+            const separator = cleanedBaseUrl.includes('?') ? '&' : '?';
+            row.finalUrl = `${cleanedBaseUrl}${separator}${params.toString()}`;
+            row.status = 'auto';
+            
+            updateRowUI(rowId);
+            saveToLocalStorage();
+        }
 
-            if (filtered.length === 0) return;
+        // Generates utm_id in format YYYYMMDD_XXX
+        function generateUtmId(sequenceNumber) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const seq = String(sequenceNumber).padStart(3, '0');
+            return `${year}${month}${day}_${seq}`;
+        }
 
-            const wrapper = input.closest('.autocomplete-wrapper');
-            const autocompleteDiv = document.createElement('div');
-            autocompleteDiv.className = 'autocomplete-items';
+        // Cleans and validates URL
+        function cleanUrl(url) {
+            if (!url) return null;
+            
+            let cleanedUrl = url.trim();
+            
+            // Add protocol if missing
+            if (!/^https?:\/\//i.test(cleanedUrl)) {
+                cleanedUrl = 'https://' + cleanedUrl;
+            }
+            
+            // Validate URL
+            try {
+                const urlObj = new URL(cleanedUrl);
+                
+                // Check for valid protocol
+                if (!['http:', 'https:'].includes(urlObj.protocol)) {
+                    console.error(`Invalid protocol: ${urlObj.protocol}`);
+                    return null;
+                }
+                
+                // Check for domain
+                if (!urlObj.hostname || urlObj.hostname === '') {
+                    console.error('Missing hostname');
+                    return null;
+                }
+                
+                // Remove existing UTM parameters
+                const params = new URLSearchParams(urlObj.search);
+                const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id', 'utm_source_platform', 'utm_creative_format', 'utm_marketing_tactic'];
+                utmParams.forEach(param => params.delete(param));
+                
+                // Rebuild URL
+                urlObj.search = params.toString();
+                let result = urlObj.origin + urlObj.pathname;
+                if (urlObj.search) result += '?' + urlObj.search;
+                if (urlObj.hash) result += urlObj.hash;
+                
+                return result;
+            } catch (e) {
+                console.error('Could not parse URL for cleaning:', e);
+                return null;
+            }
+        }
 
-            filtered.forEach(item => {
+        // Sanitizes UTM parameter (lowercase, underscores, remove invalid chars)
+        function sanitizeUtmParam(value) {
+            if (!value) return '';
+            return value
+                .toLowerCase()
+                .replace(/\s+/g, '_')
+                .replace(/[^a-z0-9_-]/g, '');
+        }
+
+        // Updates row UI (Final URL, Status, QR)
+        function updateRowUI(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row) return;
+            
+            const tr = document.getElementById(`row-${rowId}`);
+            if (!tr) return;
+            
+            const finalUrlCell = tr.querySelector('td[data-field="finalUrl"]');
+            const statusCell = tr.querySelector('td[data-field="status"]');
+            const qrCell = tr.querySelector('span[data-field="qr"]');
+            
+            if (finalUrlCell) {
+                if (row.finalUrl) {
+                    finalUrlCell.textContent = row.finalUrl;
+                    finalUrlCell.title = row.finalUrl;
+                } else {
+                    finalUrlCell.textContent = '-';
+                    finalUrlCell.title = '';
+                }
+            }
+            
+            if (statusCell) {
+                statusCell.className = ''; // Reset classes
+                if (row.status === 'auto') {
+                    statusCell.className = 'status-auto';
+                    statusCell.textContent = '🔄 Auto';
+                } else if (row.status === 'error') {
+                    statusCell.className = 'status-error';
+                    statusCell.textContent = '❌ Error';
+                } else {
+                    statusCell.className = 'status-pending';
+                    statusCell.textContent = 'Waiting';
+                }
+            }
+            
+            if (qrCell) {
+                if (row.finalUrl && row.status === 'auto') {
+                    qrCell.innerHTML = `<a href="#" class="qr-link" onclick="showQRModal(${rowId}); return false;">Generate</a>`;
+                } else {
+                    qrCell.textContent = '-';
+                }
+            }
+        }
+
+        // Regenerates all URLs
+        function regenerateAll() {
+            renumberAllRows(); // First renumber (for utm_id)
+            rows.forEach(row => {
+                autoGenerateUTM(row.id);
+            });
+        }
+
+        // Regenerates only URLs (without changing utm_id)
+        function regenerateAllUrls() {
+            rows.forEach(row => {
+                autoGenerateUTM(row.id);
+            });
+        }
+
+        // --- Statistics ---
+
+        // Updates statistics (total rows, generated, errors)
+        function updateStats() {
+            const totalRows = rows.length;
+            const generatedRows = rows.filter(r => r.status === 'auto').length;
+            const errorRows = rows.filter(r => r.status === 'error').length;
+            
+            document.getElementById('totalRows').textContent = totalRows;
+            document.getElementById('generatedRows').textContent = generatedRows;
+            document.getElementById('errorRows').textContent = errorRows;
+        }
+
+        // --- Autocomplete ---
+
+        // Handles autocomplete for input
+        function handleAutocomplete(input, rowId = null) {
+            const autocompleteType = input.dataset.autocomplete;
+            if (!autocompleteType || !autocompleteData.hasOwnProperty(autocompleteType)) return;
+            
+            const value = input.value.trim().toLowerCase();
+            
+            // Close previous autocomplete if different input
+            if (currentAutocompleteInput && currentAutocompleteInput !== input) {
+                closeAutocomplete();
+            }
+            currentAutocompleteInput = input;
+            
+            // If empty, close autocomplete
+            if (!value) {
+                closeAutocomplete();
+                return;
+            }
+            
+            // Filter matching values
+            const matches = Array.from(autocompleteData[autocompleteType])
+                .filter(item => item.toLowerCase().includes(value))
+                .slice(0, 10); // Max 10 suggestions
+            
+            if (matches.length === 0) {
+                closeAutocomplete();
+                return;
+            }
+            
+            // Create or get autocomplete container
+            let autocompleteDiv = input.parentElement.querySelector('.autocomplete-items');
+            if (!autocompleteDiv) {
+                autocompleteDiv = document.createElement('div');
+                autocompleteDiv.className = 'autocomplete-items';
+                input.parentElement.appendChild(autocompleteDiv);
+            }
+            
+            // Clear previous content
+            autocompleteDiv.innerHTML = '';
+            
+            // Add suggestions
+            matches.forEach(match => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'autocomplete-item';
                 
-                const index = item.toLowerCase().indexOf(value);
-                if (index !== -1) {
-                    const before = item.substring(0, index);
-                    const match = item.substring(index, index + value.length);
-                    const after = item.substring(index + value.length);
-                    itemDiv.innerHTML = `${before}<strong>${match}</strong>${after}`;
-                } else {
-                    itemDiv.textContent = item;
-                }
-
+                // Highlight matching part
+                const matchIndex = match.toLowerCase().indexOf(value);
+                const before = match.substring(0, matchIndex);
+                const matched = match.substring(matchIndex, matchIndex + value.length);
+                const after = match.substring(matchIndex + value.length);
+                
+                itemDiv.innerHTML = `${before}<strong>${matched}</strong>${after}`;
+                
                 itemDiv.addEventListener('click', function() {
-                    input.value = item;
-                    autoGenerateUTM(rowId);
-                    closeAllAutocomplete();
+                    input.value = match;
+                    closeAutocomplete();
+                    if (rowId) {
+                        autoGenerateUTM(rowId);
+                    }
                 });
-
+                
                 autocompleteDiv.appendChild(itemDiv);
             });
-
-            wrapper.appendChild(autocompleteDiv);
-            currentAutocompleteInput = input;
         }
 
-        function closeAllAutocomplete() {
-            document.querySelectorAll('.autocomplete-items').forEach(el => el.remove());
+        // Closes autocomplete
+        function closeAutocomplete() {
+            const autocompleteItems = document.querySelectorAll('.autocomplete-items');
+            autocompleteItems.forEach(item => item.remove());
             currentAutocompleteInput = null;
         }
 
+        // Close autocomplete when clicking outside
         document.addEventListener('click', function(e) {
             if (!e.target.matches('input[data-autocomplete]')) {
-                closeAllAutocomplete();
+                closeAutocomplete();
             }
         });
 
-        document.addEventListener('keydown', function(e) {
-            if (!currentAutocompleteInput) return;
+        // --- Quick Fill ---
 
-            const autocompleteDiv = currentAutocompleteInput.parentElement.querySelector('.autocomplete-items');
-            if (!autocompleteDiv) return;
-
-            const items = autocompleteDiv.querySelectorAll('.autocomplete-item');
-            let currentFocus = -1;
-
-            items.forEach((item, index) => {
-                if (item.classList.contains('autocomplete-active')) {
-                    currentFocus = index;
-                }
-            });
-
-            if (e.keyCode === 40) {
-                currentFocus++;
-                addActive(items, currentFocus);
-                e.preventDefault();
-            } else if (e.keyCode === 38) {
-                currentFocus--;
-                addActive(items, currentFocus);
-                e.preventDefault();
-            } else if (e.keyCode === 13) {
-                e.preventDefault();
-                if (currentFocus > -1 && items[currentFocus]) {
-                    items[currentFocus].click();
-                }
-            } else if (e.keyCode === 27) {
-                closeAllAutocomplete();
-            }
-        });
-
-        function addActive(items, index) {
-            if (!items || items.length === 0) return;
-            removeActive(items);
-            if (index >= items.length) index = 0;
-            if (index < 0) index = items.length - 1;
-            items[index].classList.add('autocomplete-active');
-            items[index].style.background = '#dbeafe';
-        }
-
-        function removeActive(items) {
-            items.forEach(item => {
-                item.classList.remove('autocomplete-active');
-                item.style.background = '';
-            });
-        }
-
-        function updateRow(rowId) {
-            saveToLocalStorage();
-            updateStats();
-        }
-
+        // Applies quick fill to all empty rows
         function applyQuickFill() {
-            const quickData = {
-                utmSource: document.getElementById('quickSource').value.trim(),
-                utmMedium: document.getElementById('quickMedium').value.trim(),
-                utmCampaign: document.getElementById('quickCampaign').value.trim(),
-                utmTerm: document.getElementById('quickTerm').value.trim(),
-                utmContent: document.getElementById('quickContent').value.trim(),
-                utmSourcePlatform: document.getElementById('quickPlatform').value.trim(),
-                utmCreativeFormat: document.getElementById('quickFormat').value.trim(),
-                utmMarketingTactic: document.getElementById('quickTactic').value.trim()
-            };
-
-            let filled = 0;
-
+            const quickBaseUrl = document.getElementById('quickBaseUrl').value.trim();
+            const quickSource = document.getElementById('quickSource').value.trim();
+            const quickMedium = document.getElementById('quickMedium').value.trim();
+            const quickCampaign = document.getElementById('quickCampaign').value.trim();
+            const quickTerm = document.getElementById('quickTerm').value.trim();
+            const quickContent = document.getElementById('quickContent').value.trim();
+            const quickPlatform = document.getElementById('quickPlatform').value.trim();
+            const quickFormat = document.getElementById('quickFormat').value.trim();
+            const quickTactic = document.getElementById('quickTactic').value.trim();
+            
+            let filledCount = 0;
+            
             rows.forEach(row => {
                 const tr = document.getElementById(`row-${row.id}`);
                 if (!tr) return;
-
-                let hasChanges = false;
-
-                Object.keys(quickData).forEach(key => {
-                    if (quickData[key] && !row[key]) {
-                        row[key] = quickData[key];
-                        const input = tr.querySelector(`input[data-field="${key}"]`);
-                        if (input) {
-                            input.value = quickData[key];
-                            hasChanges = true;
-                        }
-                    }
-                });
-
-                if (hasChanges) {
-                    autoGenerateUTM(row.id);
-                    filled++;
-                }
-            });
-
-            if (filled > 0) {
-                showAlert(`Filled and generated ${filled} rows`, 'success');
-            } else {
-                showAlert('All rows already have values', 'info');
-            }
-        }
-
-        function regenerateAll() {
-            let regenerated = 0;
-            
-            rows.forEach(row => {
-                autoGenerateUTM(row.id);
-                if (row.status === 'auto' || row.status === 'success') {
-                    regenerated++;
-                }
-            });
-
-            showAlert(`Regenerated ${regenerated} rows`, 'success');
-        }
-
-        function deleteRow(rowId) {
-            if (confirm('Are you sure you want to delete this row?')) {
-                const tr = document.getElementById(`row-${rowId}`);
-                if (tr) tr.remove();
                 
-                rows = rows.filter(r => r.id !== rowId);
-                renumberAllRows();
-                updateStats();
-                saveToLocalStorage();
-                showAlert('Row deleted successfully', 'success');
-            }
-        }
-
-        function updateRowUI(tr, row) {
-            const finalUrlCell = tr.querySelector('[data-field="finalUrl"]');
-            const statusCell = tr.querySelector('[data-field="status"]');
-            const qrCell = tr.querySelector('[data-field="qr"]');
-
-            if (row.status === 'auto' || row.status === 'success') {
-                finalUrlCell.innerHTML = `<a href="${row.finalUrl}" target="_blank" title="${row.finalUrl}">${row.finalUrl}</a>`;
-                statusCell.textContent = '🔄 Auto';
-                statusCell.className = 'status-auto';
-                qrCell.innerHTML = `<a href="#" class="qr-link" onclick="showQRModal('${row.finalUrl}', '${row.qrUrl}'); return false;">View</a>`;
-            } else if (row.status === 'error') {
-                finalUrlCell.textContent = row.finalUrl;
-                statusCell.textContent = '❌ Error';
-                statusCell.className = 'status-error';
-                qrCell.textContent = '-';
+                let rowWasEmpty = false;
+                
+                // Check if row is empty (no baseUrl, source, medium, campaign)
+                if (!row.baseUrl && !row.utmSource && !row.utmMedium && !row.utmCampaign) {
+                    rowWasEmpty = true;
+                }
+                
+                if (rowWasEmpty) {
+                    // Fill inputs
+                    if (quickBaseUrl) {
+                        const input = tr.querySelector('input[data-field="baseUrl"]');
+                        if (input) input.value = quickBaseUrl;
+                        row.baseUrl = quickBaseUrl;
+                    }
+                    if (quickSource) {
+                        const input = tr.querySelector('input[data-field="utmSource"]');
+                        if (input) input.value = quickSource;
+                        row.utmSource = quickSource;
+                    }
+                    if (quickMedium) {
+                        const input = tr.querySelector('input[data-field="utmMedium"]');
+                        if (input) input.value = quickMedium;
+                        row.utmMedium = quickMedium;
+                    }
+                    if (quickCampaign) {
+                        const input = tr.querySelector('input[data-field="utmCampaign"]');
+                        if (input) input.value = quickCampaign;
+                        row.utmCampaign = quickCampaign;
+                    }
+                    if (quickTerm) {
+                        const input = tr.querySelector('input[data-field="utmTerm"]');
+                        if (input) input.value = quickTerm;
+                        row.utmTerm = quickTerm;
+                    }
+                    if (quickContent) {
+                        const input = tr.querySelector('input[data-field="utmContent"]');
+                        if (input) input.value = quickContent;
+                        row.utmContent = quickContent;
+                    }
+                    if (quickPlatform) {
+                        const input = tr.querySelector('input[data-field="utmSourcePlatform"]');
+                        if (input) input.value = quickPlatform;
+                        row.utmSourcePlatform = quickPlatform;
+                    }
+                    if (quickFormat) {
+                        const input = tr.querySelector('input[data-field="utmCreativeFormat"]');
+                        if (input) input.value = quickFormat;
+                        row.utmCreativeFormat = quickFormat;
+                    }
+                    if (quickTactic) {
+                        const input = tr.querySelector('input[data-field="utmMarketingTactic"]');
+                        if (input) input.value = quickTactic;
+                        row.utmMarketingTactic = quickTactic;
+                    }
+                    
+                    filledCount++;
+                    autoGenerateUTM(row.id);
+                }
+            });
+            
+            if (filledCount > 0) {
+                showAlert(`✅ Quick fill applied to ${filledCount} empty row(s)`, 'success');
             } else {
-                finalUrlCell.textContent = '-';
-                statusCell.textContent = 'Waiting';
-                statusCell.className = 'status-pending';
-                qrCell.textContent = '-';
+                showAlert('⚠️ No empty rows found', 'info');
             }
         }
 
-        function validateURL(url) {
-            try {
-                const urlObj = new URL(url);
-                return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
-            } catch {
-                return false;
-            }
-        }
+        // --- Export Functions ---
 
-        function cleanURL(url) {
-            let clean = url.trim();
-            
-            if (clean.toLowerCase().includes('utm_')) {
-                const urlObj = new URL(clean);
-                const params = new URLSearchParams(urlObj.search);
-                ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 
-                 'utm_id', 'utm_source_platform', 'utm_creative_format', 'utm_marketing_tactic'].forEach(p => params.delete(p));
-                clean = urlObj.origin + urlObj.pathname + (params.toString() ? '?' + params.toString() : '');
-            }
-
-            if (clean.includes('#')) {
-                clean = clean.split('#')[0];
-            }
-
-            return clean;
-        }
-
-        function showQRModal(finalUrl, qrUrl) {
-            currentQRUrlForDownload = finalUrl;
-            document.getElementById('qrImage').src = qrUrl;
-            document.getElementById('qrUrl').textContent = finalUrl;
-            document.getElementById('qrModal').style.display = 'block';
-        }
-
-        function closeQRModal() {
-            document.getElementById('qrModal').style.display = 'none';
-        }
-
-        function downloadQR(format) {
-            let url = '';
-            const encodedUrl = encodeURIComponent(currentQRUrlForDownload);
-            
-            switch(format) {
-                case 'png':
-                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=png&data=${encodedUrl}`;
-                    break;
-                case 'jpeg':
-                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=jpg&data=${encodedUrl}`;
-                    break;
-                case 'svg':
-                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=svg&data=${encodedUrl}`;
-                    break;
-                case 'eps':
-                    url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&margin=10&format=eps&data=${encodedUrl}`;
-                    break;
-            }
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `qr-code-${Date.now()}.${format}`;
-            link.target = '_blank';
-            link.click();
-
-            showAlert(`QR code downloaded as ${format.toUpperCase()}`, 'success');
-        }
-
+        // Exports to CSV
         function exportToCSV() {
-            const headers = ['#', 'Base URL', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 
-                            'utm_content', 'utm_id', 'utm_source_platform', 'utm_creative_format', 
-                            'utm_marketing_tactic', 'Final UTM URL', 'Status'];
+            if (rows.length === 0) {
+                showAlert('No data to export', 'error');
+                return;
+            }
+            
+            const headers = ['#', 'Base URL', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
+            if (document.getElementById('togglePlatform').checked) headers.push('utm_source_platform');
+            if (document.getElementById('toggleFormat').checked) headers.push('utm_creative_format');
+            if (document.getElementById('toggleTactic').checked) headers.push('utm_marketing_tactic');
+            headers.push('Final UTM URL', 'Status');
             
             let csv = headers.join(',') + '\n';
             
-            const tbody = document.getElementById('tableBody');
-            const allRows = tbody.querySelectorAll('tr');
-            
-            allRows.forEach((tr, index) => {
-                const rowId = parseInt(tr.dataset.rowId);
-                const row = rows.find(r => r.id === rowId);
-                if (!row) return;
-
+            rows.forEach((row, index) => {
                 const rowData = [
                     index + 1,
-                    `"${row.baseUrl}"`,
-                    `"${row.utmSource}"`,
-                    `"${row.utmMedium}"`,
-                    `"${row.utmCampaign}"`,
-                    `"${row.utmTerm}"`,
-                    `"${row.utmContent}"`,
-                    `"${row.utmId}"`,
-                    `"${row.utmSourcePlatform}"`,
-                    `"${row.utmCreativeFormat}"`,
-                    `"${row.utmMarketingTactic}"`,
-                    `"${row.finalUrl}"`,
-                    `"${row.status}"`
+                    `"${row.baseUrl.replace(/"/g, '""')}"`,
+                    `"${row.utmSource.replace(/"/g, '""')}"`,
+                    `"${row.utmMedium.replace(/"/g, '""')}"`,
+                    `"${row.utmCampaign.replace(/"/g, '""')}"`,
+                    `"${row.utmTerm.replace(/"/g, '""')}"`,
+                    `"${row.utmContent.replace(/"/g, '""')}"`,
+                    `"${row.utmId.replace(/"/g, '""')}"`
                 ];
+                
+                if (document.getElementById('togglePlatform').checked) {
+                    rowData.push(`"${row.utmSourcePlatform.replace(/"/g, '""')}"`);
+                }
+                if (document.getElementById('toggleFormat').checked) {
+                    rowData.push(`"${row.utmCreativeFormat.replace(/"/g, '""')}"`);
+                }
+                if (document.getElementById('toggleTactic').checked) {
+                    rowData.push(`"${row.utmMarketingTactic.replace(/"/g, '""')}"`);
+                }
+                
+                rowData.push(`"${row.finalUrl.replace(/"/g, '""')}"`);
+                
+                const statusText = row.status === 'auto' ? 'Generated' : (row.status === 'error' ? 'Error' : 'Pending');
+                rowData.push(`"${statusText}"`);
+                
                 csv += rowData.join(',') + '\n';
             });
-
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `utm-links-${new Date().toISOString().slice(0,10)}.csv`;
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            const today = new Date().toISOString().slice(0, 10);
+            link.setAttribute('download', `utm_links_${today}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
             link.click();
-
-            showAlert('CSV file downloaded', 'success');
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showAlert('CSV file exported successfully', 'success');
         }
 
+        // Exports to Excel
         function exportToExcel() {
-            const data = [
-                ['#', 'Base URL', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 
-                 'utm_content', 'utm_id', 'utm_source_platform', 'utm_creative_format', 
-                 'utm_marketing_tactic', 'Final UTM URL', 'Status']
-            ];
-
-            const tbody = document.getElementById('tableBody');
-            const allRows = tbody.querySelectorAll('tr');
+            if (rows.length === 0) {
+                showAlert('No data to export', 'error');
+                return;
+            }
             
-            allRows.forEach((tr, index) => {
-                const rowId = parseInt(tr.dataset.rowId);
-                const row = rows.find(r => r.id === rowId);
-                if (!row) return;
-
-                data.push([
+            if (typeof XLSX === 'undefined') {
+                showAlert('Excel library not loaded. Please check your internet connection.', 'error');
+                return;
+            }
+            
+            const headers = ['#', 'Base URL', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
+            if (document.getElementById('togglePlatform').checked) headers.push('utm_source_platform');
+            if (document.getElementById('toggleFormat').checked) headers.push('utm_creative_format');
+            if (document.getElementById('toggleTactic').checked) headers.push('utm_marketing_tactic');
+            headers.push('Final UTM URL', 'Status');
+            
+            const data = [headers];
+            
+            rows.forEach((row, index) => {
+                const rowData = [
                     index + 1,
                     row.baseUrl,
                     row.utmSource,
@@ -1519,137 +2500,648 @@
                     row.utmCampaign,
                     row.utmTerm,
                     row.utmContent,
-                    row.utmId,
-                    row.utmSourcePlatform,
-                    row.utmCreativeFormat,
-                    row.utmMarketingTactic,
-                    row.finalUrl,
-                    row.status
-                ]);
-            });
-
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            
-            ws['!cols'] = [
-                {wch: 5}, {wch: 30}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 15},
-                {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 60}, {wch: 15}
-            ];
-
-            XLSX.utils.book_append_sheet(wb, ws, 'UTM Links');
-            XLSX.writeFile(wb, `utm-links-${new Date().toISOString().slice(0,10)}.xlsx`);
-
-            showAlert('Excel file downloaded', 'success');
-        }
-
-        function clearAll() {
-            if (confirm('Are you sure you want to clear all rows? This cannot be undone.')) {
-                document.getElementById('tableBody').innerHTML = '';
-                rows = [];
-                rowCounter = 0;
-                addRow();
-                addRow();
-                addRow();
-                updateStats();
-                saveToLocalStorage();
-                showAlert('All data cleared', 'info');
-            }
-        }
-
-        function updateStats() {
-            document.getElementById('totalRows').textContent = rows.length;
-            document.getElementById('generatedRows').textContent = rows.filter(r => r.status === 'auto' || r.status === 'success').length;
-            document.getElementById('errorRows').textContent = rows.filter(r => r.status === 'error').length;
-        }
-
-        function showAlert(message, type = 'info') {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.textContent = message;
-            alertBox.className = `alert alert-${type} show`;
-            
-            setTimeout(() => {
-                alertBox.classList.remove('show');
-            }, 5000);
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('utmGeneratorRows', JSON.stringify(rows));
-            localStorage.setItem('utmGeneratorRowCounter', rowCounter);
-            localStorage.setItem('utmGeneratorAutocomplete', JSON.stringify({
-                utm_source: Array.from(autocompleteData.utm_source),
-                utm_medium: Array.from(autocompleteData.utm_medium),
-                utm_campaign: Array.from(autocompleteData.utm_campaign),
-                utm_term: Array.from(autocompleteData.utm_term),
-                utm_content: Array.from(autocompleteData.utm_content),
-                utm_source_platform: Array.from(autocompleteData.utm_source_platform),
-                utm_creative_format: Array.from(autocompleteData.utm_creative_format),
-                utm_marketing_tactic: Array.from(autocompleteData.utm_marketing_tactic)
-            }));
-        }
-
-        function loadFromLocalStorage() {
-            const savedRows = localStorage.getItem('utmGeneratorRows');
-            const savedCounter = localStorage.getItem('utmGeneratorRowCounter');
-            const savedAutocomplete = localStorage.getItem('utmGeneratorAutocomplete');
-
-            if (savedCounter) {
-                rowCounter = parseInt(savedCounter);
-            }
-
-            if (savedAutocomplete) {
-                const data = JSON.parse(savedAutocomplete);
-                Object.keys(data).forEach(key => {
-                    if (autocompleteData[key]) {
-                        autocompleteData[key] = new Set([...autocompleteData[key], ...data[key]]);
-                    }
-                });
-            }
-
-            if (savedRows) {
-                const data = JSON.parse(savedRows);
-                data.forEach(rowData => {
-                    const rowId = addRow();
-                    const tr = document.getElementById(`row-${rowId}`);
-                    const row = rows.find(r => r.id === rowId);
-                    
-                    if (row && tr) {
-                        Object.keys(rowData).forEach(key => {
-                            if (key !== 'id') {
-                                row[key] = rowData[key];
-                                const input = tr.querySelector(`input[data-field="${key}"]`);
-                                if (input && !input.readOnly) {
-                                    input.value = rowData[key] || '';
-                                }
-                            }
-                        });
-                        
-                        if (rowData.utmId) {
-                            tr.querySelector('input[data-field="utmId"]').value = rowData.utmId;
-                        }
-                        
-                        if (rowData.status !== 'pending' && rowData.finalUrl) {
-                            updateRowUI(tr, row);
-                        }
-                    }
-                });
+                    row.utmId
+                ];
                 
-                renumberAllRows();
+                if (document.getElementById('togglePlatform').checked) {
+                    rowData.push(row.utmSourcePlatform);
+                }
+                if (document.getElementById('toggleFormat').checked) {
+                    rowData.push(row.utmCreativeFormat);
+                }
+                if (document.getElementById('toggleTactic').checked) {
+                    rowData.push(row.utmMarketingTactic);
+                }
+                
+                rowData.push(row.finalUrl);
+                
+                const statusText = row.status === 'auto' ? 'Generated' : (row.status === 'error' ? 'Error' : 'Pending');
+                rowData.push(statusText);
+                
+                data.push(rowData);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'UTM Links');
+            
+            const today = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `utm_links_${today}.xlsx`);
+            
+            showAlert('Excel file exported successfully', 'success');
+        }
+
+        // --- localStorage Functions ---
+
+        // Loads data from localStorage
+        function loadFromLocalStorage() {
+            try {
+                // Load rows
+                const savedRows = localStorage.getItem(STORAGE_KEYS.rows);
+                if (savedRows) {
+                    rows = JSON.parse(savedRows);
+                    console.log(`📦 Loaded ${rows.length} rows from localStorage`);
+                }
+                
+                // Load counter
+                const savedCounter = localStorage.getItem(STORAGE_KEYS.counter);
+                if (savedCounter) {
+                    rowCounter = parseInt(savedCounter);
+                    console.log(`🔢 Loaded counter: ${rowCounter}`);
+                }
+                
+                // Load autocomplete history
+                const savedAutocomplete = localStorage.getItem(STORAGE_KEYS.autocomplete);
+                if (savedAutocomplete) {
+                    const parsed = JSON.parse(savedAutocomplete);
+                    Object.keys(parsed).forEach(key => {
+                        if (autocompleteData.hasOwnProperty(key)) {
+                            autocompleteData[key] = new Set(parsed[key]);
+                        }
+                    });
+                    console.log(`📝 Loaded autocomplete history`);
+                }
+                
+                // Load toggle states
+                const toggleId = localStorage.getItem(STORAGE_KEYS.toggleId);
+                if (toggleId !== null) {
+                    document.getElementById('toggleUtmId').checked = (toggleId === 'true');
+                }
+                
+                const togglePlatform = localStorage.getItem(STORAGE_KEYS.togglePlatform);
+                if (togglePlatform !== null) {
+                    document.getElementById('togglePlatform').checked = (togglePlatform === 'true');
+                }
+                
+                const toggleFormat = localStorage.getItem(STORAGE_KEYS.toggleFormat);
+                if (toggleFormat !== null) {
+                    document.getElementById('toggleFormat').checked = (toggleFormat === 'true');
+                }
+                
+                const toggleTactic = localStorage.getItem(STORAGE_KEYS.toggleTactic);
+                if (toggleTactic !== null) {
+                    document.getElementById('toggleTactic').checked = (toggleTactic === 'true');
+                }
+                
+                // Apply column visibility
+                updateColumnVisibility();
+                
+                // Rebuild table from loaded data
+                if (rows.length > 0) {
+                    const tbody = document.getElementById('tableBody');
+                    tbody.innerHTML = ''; // Clear existing rows
+                    
+                    rows.forEach(rowData => {
+                        addRow(rowData);
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+                showAlert('Error loading data from storage', 'error');
             }
         }
 
+        // Saves data to localStorage
+        function saveToLocalStorage() {
+            try {
+                // Save rows
+                localStorage.setItem(STORAGE_KEYS.rows, JSON.stringify(rows));
+                
+                // Save counter
+                localStorage.setItem(STORAGE_KEYS.counter, rowCounter.toString());
+                
+                // Save autocomplete history
+                const autocompleteToSave = {};
+                Object.keys(autocompleteData).forEach(key => {
+                    autocompleteToSave[key] = Array.from(autocompleteData[key]);
+                });
+                localStorage.setItem(STORAGE_KEYS.autocomplete, JSON.stringify(autocompleteToSave));
+                
+                // Save toggle states
+                localStorage.setItem(STORAGE_KEYS.toggleId, document.getElementById('toggleUtmId').checked.toString());
+                localStorage.setItem(STORAGE_KEYS.togglePlatform, document.getElementById('togglePlatform').checked.toString());
+                localStorage.setItem(STORAGE_KEYS.toggleFormat, document.getElementById('toggleFormat').checked.toString());
+                localStorage.setItem(STORAGE_KEYS.toggleTactic, document.getElementById('toggleTactic').checked.toString());
+                
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+                if (error.name === 'QuotaExceededError') {
+                    showAlert('⚠️ Storage quota exceeded! Please create a backup and clear old data.', 'error');
+                } else {
+                    showAlert('Error saving data to storage', 'error');
+                }
+            }
+        }
+
+        // === STATISTICS TO CONSOLE ===
+        function logAppStatistics() {
+            console.log('%c' + '─'.repeat(50), 'color: #e0e0e0;');
+            console.log('%c📊 Application Statistics', 'color: #1e88e5; font-size: 14px; font-weight: bold;');
+            console.log('%c' + '─'.repeat(50), 'color: #e0e0e0;');
+            
+            // Basic stats
+            console.log(`📋 Total rows: ${rows.length}`);
+            console.log(`✅ Generated URLs: ${rows.filter(r => r.status === 'auto').length}`);
+            console.log(`❌ Errors: ${rows.filter(r => r.status === 'error').length}`);
+            console.log(`⏳ Pending: ${rows.filter(r => r.status === 'pending').length}`);
+            
+            // Autocomplete stats
+            let totalAutocompleteItems = 0;
+            Object.keys(autocompleteData).forEach(key => {
+                totalAutocompleteItems += autocompleteData[key].size;
+            });
+            console.log(`🔍 Autocomplete history items: ${totalAutocompleteItems}`);
+            
+            // Settings
+            console.log(`⚙️ Auto utm_id: ${document.getElementById('toggleUtmId').checked}`);
+            console.log(`⚙️ Show platform: ${document.getElementById('togglePlatform').checked}`);
+            console.log(`⚙️ Show format: ${document.getElementById('toggleFormat').checked}`);
+            console.log(`⚙️ Show tactic: ${document.getElementById('toggleTactic').checked}`);
+            
+            // Data size in localStorage (approximate)
+            try {
+                const dataSize = JSON.stringify(rows).length + JSON.stringify(Array.from(autocompleteData)).length;
+                const dataSizeKB = (dataSize / 1024).toFixed(2);
+                console.log(`💾 Approximate data size: ${dataSizeKB} KB`);
+            } catch(e) {
+                console.log(`💾 Data size: cannot determine`);
+            }
+            
+            console.log('%c' + '─'.repeat(50), 'color: #e0e0e0;');
+        }
+        // === END STATISTICS ===
+
+        // --- Backup / Restore ---
+
+        // Creates and downloads JSON backup
+        function backupData() {
+            try {
+                // Convert Set objects in autocompleteData to arrays for JSON serialization
+                const autocompleteToSave = {};
+                for (const key in autocompleteData) {
+                    if (autocompleteData.hasOwnProperty(key)) {
+                        autocompleteToSave[key] = Array.from(autocompleteData[key]);
+                    }
+                }
+                // Create backup object containing rows and history
+                const backupObject = {
+                    version: APP_VERSION,
+                    storageVersion: STORAGE_VERSION,
+                    exportDate: new Date().toISOString(),
+                    rows: rows,
+                    autocompleteData: autocompleteToSave
+                };
+                // Convert to JSON with indentation for better readability
+                const jsonString = JSON.stringify(backupObject, null, 2);
+                // Create Blob (binary data)
+                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+                // Create temporary download link
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                const today = new Date().toISOString().slice(0, 10);
+                link.setAttribute("download", `utm_backup_${today}.json`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showAlert('Data backup downloaded successfully', 'success');
+            } catch (error) {
+                console.error("Backup error:", error);
+                showAlert('Failed to create backup', 'error');
+            }
+        }
+
+        // Starts data restore process (triggers click on hidden input)
+        function restoreData() {
+            if (confirm('Do you really want to restore data from backup? All current data (rows and autocomplete history) will be overwritten!')) {
+                document.getElementById('restoreFile').click();
+            }
+        }
+
+        // Processes selected file for restore
+        function handleRestoreFileSelect(event) {
+            const file = event.target.files[0];
+            
+            if (!file) {
+                showAlert('No file selected', 'error');
+                return;
+            }
+            
+            // Type check - JSON can have various MIME types
+            const validTypes = ['application/json', 'text/plain', ''];
+            if (!validTypes.includes(file.type) && !file.name.endsWith('.json')) {
+                showAlert('Error: Selected file is not a valid JSON file', 'error');
+                event.target.value = null;
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const backupObject = JSON.parse(content);
+
+                    // === VERSION CHECK (informative) ===
+                    if (backupObject.version) {
+                        console.log(`📦 Restoring backup from version ${backupObject.version} (current: ${APP_VERSION})`);
+                        if (backupObject.version !== APP_VERSION) {
+                            console.warn(`⚠️ Different versions: backup=${backupObject.version}, app=${APP_VERSION}`);
+                        }
+                    } else {
+                        console.log('📦 Restoring backup (no version info - older format)');
+                    }
+                    // === END VERSION CHECK ===
+                    
+                    // Structure validation
+                    if (!backupObject || typeof backupObject !== 'object') {
+                        throw new Error('File does not contain valid object');
+                    }
+                    if (!Array.isArray(backupObject.rows)) {
+                        throw new Error('Missing "rows" field or not an array');
+                    }
+                    if (!backupObject.autocompleteData || typeof backupObject.autocompleteData !== 'object') {
+                        throw new Error('Missing "autocompleteData"');
+                    }
+                    
+                    // Delete existing data
+                    rows = [];
+                    document.getElementById('tableBody').innerHTML = '';
+                    
+                    // Restore autocomplete
+                    autocompleteData = {
+                        utm_source: new Set(),
+                        utm_medium: new Set(),
+                        utm_campaign: new Set(),
+                        utm_term: new Set(),
+                        utm_content: new Set(),
+                        utm_source_platform: new Set(),
+                        utm_creative_format: new Set(),
+                        utm_marketing_tactic: new Set()
+                    };
+                    
+                    Object.keys(backupObject.autocompleteData).forEach(key => {
+                        if (autocompleteData.hasOwnProperty(key) && Array.isArray(backupObject.autocompleteData[key])) {
+                            autocompleteData[key] = new Set(backupObject.autocompleteData[key]);
+                        }
+                    });
+                    
+                    // Check if utm_id auto-generation is enabled
+                    const isUtmIdAuto = document.getElementById('toggleUtmId').checked;
+                    const tbody = document.getElementById('tableBody');
+
+                    // Restore rows - create HTML directly
+                    let maxId = 0;
+                    backupObject.rows.forEach((rowData, index) => {
+                        if (rowData && rowData.id != null) {
+                            maxId = Math.max(maxId, rowData.id);
+                            const rowId = rowData.id;
+                            
+                            // Create HTML row directly
+                            const tr = document.createElement('tr');
+                            tr.id = `row-${rowId}`;
+                            tr.dataset.rowId = rowId;
+                            tr.dataset.displayNumber = index + 1;
+                            
+                            tr.innerHTML = `
+                                <td class="row-number">${index + 1}</td>
+                                <td><input type="url" data-field="baseUrl" value="${rowData.baseUrl || ''}" placeholder="https://www.example.com" oninput="autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper"><input type="text" data-field="utmSource" data-autocomplete="utm_source" value="${rowData.utmSource || ''}" placeholder="facebook" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper"><input type="text" data-field="utmMedium" data-autocomplete="utm_medium" value="${rowData.utmMedium || ''}" placeholder="social" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper"><input type="text" data-field="utmCampaign" data-autocomplete="utm_campaign" value="${rowData.utmCampaign || ''}" placeholder="summer_sale" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper"><input type="text" data-field="utmTerm" data-autocomplete="utm_term" value="${rowData.utmTerm || ''}" placeholder="keywords" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper"><input type="text" data-field="utmContent" data-autocomplete="utm_content" value="${rowData.utmContent || ''}" placeholder="banner_01" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td><input type="text" data-field="utmId" value="${!isUtmIdAuto && rowData.utmId ? rowData.utmId : ''}" placeholder="${isUtmIdAuto ? 'Auto' : 'Enter ID'}" ${isUtmIdAuto ? 'readonly style="background: #f5f5f5; cursor: not-allowed;"' : 'style="background: white; cursor: text;"'} oninput="autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper col-platform"><input type="text" data-field="utmSourcePlatform" data-autocomplete="utm_source_platform" value="${rowData.utmSourcePlatform || ''}" placeholder="facebook_ads" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper col-format"><input type="text" data-field="utmCreativeFormat" data-autocomplete="utm_creative_format" value="${rowData.utmCreativeFormat || ''}" placeholder="video" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="autocomplete-wrapper col-tactic"><input type="text" data-field="utmMarketingTactic" data-autocomplete="utm_marketing_tactic" value="${rowData.utmMarketingTactic || ''}" placeholder="awareness" oninput="handleAutocomplete(this, ${rowId}); autoGenerateUTM(${rowId})" onchange="updateRow(${rowId})"></td>
+                                <td class="output-cell" data-field="finalUrl">-</td>
+                                <td class="status-pending" data-field="status">Waiting for data</td>
+                                <td><span data-field="qr">-</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="icon-btn copy" onclick="copyToClipboard(${rowId})" title="Copy Final URL">📄</button>
+                                        <button class="icon-btn duplicate" onclick="duplicateRow(${rowId})" title="Duplicate row">➕</button>
+                                        <button class="icon-btn delete" onclick="deleteRow(${rowId})" title="Delete row">🗑️</button>
+                                    </div>
+                                </td>
+                            `;
+                            
+                            tbody.appendChild(tr);
+                            rows.push(rowData);
+                        }
+                    });
+
+                    rowCounter = maxId;
+                    regenerateAll();
+                    saveToLocalStorage();
+                    
+                    showAlert('Data restored successfully! Number of rows: ' + backupObject.rows.length, 'success');
+                    
+                } catch (error) {
+                    console.error('Restore error:', error);
+                    showAlert('Error restoring data: ' + error.message, 'error');
+                    loadFromLocalStorage();
+                } finally {
+                    event.target.value = null;
+                }
+            };
+            
+            reader.onerror = function(e) {
+                console.error('File reading error:', e);
+                showAlert('Error reading file', 'error');
+                event.target.value = null;
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // --- End Backup / Restore ---
+
+        // --- Other Functions ---
+
+        // Shows help modal
         function showHelp() {
             document.getElementById('helpModal').style.display = 'block';
         }
 
+        // Closes help modal
         function closeHelpModal() {
             document.getElementById('helpModal').style.display = 'none';
         }
 
+        // Global listener for closing modals by clicking outside them
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
+            const qrModal = document.getElementById('qrModal');
+            const helpModal = document.getElementById('helpModal');
+            if (event.target == qrModal) {
+                closeQRModal();
+            }
+            if (event.target == helpModal) {
+                closeHelpModal();
             }
         }
+
+        // Copies Final URL to clipboard
+        function copyToClipboard(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row || !row.finalUrl || row.status !== 'auto') {
+                showAlert('Nothing to copy. Please generate UTM link first.', 'error');
+                return;
+            }
+            
+            // Modern Clipboard API (works in most browsers)
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(row.finalUrl)
+                    .then(() => {
+                        // Visual feedback
+                        const btn = document.querySelector(`#row-${rowId} .icon-btn.copy`);
+                        if (btn) {
+                            const originalText = btn.textContent;
+                            btn.classList.add('copied');
+                            btn.textContent = '✓';
+                            
+                            setTimeout(() => {
+                                btn.classList.remove('copied');
+                                btn.textContent = originalText;
+                            }, 1500);
+                        }
+                        showAlert('URL copied to clipboard!', 'success');
+                    })
+                    .catch(err => {
+                        console.error('Clipboard error:', err);
+                        fallbackCopyToClipboard(row.finalUrl, rowId);
+                    });
+            } else {
+                // Fallback for older browsers
+                fallbackCopyToClipboard(row.finalUrl, rowId);
+            }
+        }
+
+        // Fallback method for copying (older browsers)
+        function fallbackCopyToClipboard(text, rowId) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    const btn = document.querySelector(`#row-${rowId} .icon-btn.copy`);
+                    if (btn) {
+                        const originalText = btn.textContent;
+                        btn.classList.add('copied');
+                        btn.textContent = '✓';
+                        setTimeout(() => {
+                            btn.classList.remove('copied');
+                            btn.textContent = originalText;
+                        }, 1500);
+                    }
+                    showAlert('URL copied to clipboard!', 'success');
+                } else {
+                    showAlert('Failed to copy URL. Please try manually.', 'error');
+                }
+            } catch (err) {
+                console.error('Fallback copy error:', err);
+                showAlert('Copying not supported in this browser.', 'error');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Clears all rows
+        function clearAll() {
+            if (!confirm('Do you really want to delete all rows? This action cannot be undone!\n\n(Autocomplete history and settings will be preserved)')) return;
+            
+            rows = [];
+            document.getElementById('tableBody').innerHTML = '';
+            rowCounter = 0;
+            
+            updateStats();
+            saveToLocalStorage();
+            
+            showAlert('All rows deleted', 'success');
+        }
+
+        // Clears autocomplete history
+        function clearAutocompleteHistory() {
+            if (!confirm('Do you really want to clear autocomplete history? This action cannot be undone!')) return;
+            
+            autocompleteData = {
+                utm_source: new Set(),
+                utm_medium: new Set(),
+                utm_campaign: new Set(),
+                utm_term: new Set(),
+                utm_content: new Set(),
+                utm_source_platform: new Set(),
+                utm_creative_format: new Set(),
+                utm_marketing_tactic: new Set()
+            };
+            
+            saveToLocalStorage();
+            showAlert('Autocomplete history cleared', 'success');
+        }
+
+        // Resets application to default state
+        function resetApplicationState() {
+            if (!confirm('⚠️ WARNING!\n\nThis will delete ALL data including:\n- All rows\n- Autocomplete history\n- All settings\n\nThis action CANNOT be undone!\n\nDo you want to continue?')) return;
+            
+            if (!confirm('Are you ABSOLUTELY SURE? This is your last chance to cancel!')) return;
+            
+            // Clear all data
+            rows = [];
+            rowCounter = 0;
+            autocompleteData = {
+                utm_source: new Set(),
+                utm_medium: new Set(),
+                utm_campaign: new Set(),
+                utm_term: new Set(),
+                utm_content: new Set(),
+                utm_source_platform: new Set(),
+                utm_creative_format: new Set(),
+                utm_marketing_tactic: new Set()
+            };
+            
+            // Clear localStorage
+            Object.values(STORAGE_KEYS).forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            // Reset UI
+            document.getElementById('tableBody').innerHTML = '';
+            document.getElementById('toggleUtmId').checked = true;
+            document.getElementById('togglePlatform').checked = false;
+            document.getElementById('toggleFormat').checked = false;
+            document.getElementById('toggleTactic').checked = false;
+            
+            updateColumnVisibility();
+            updateStats();
+            
+            // Add default rows
+            addRow();
+            addRow();
+            addRow();
+            
+            showAlert('✅ Application reset to default state', 'success');
+        }
+
+        // Shows alert message
+        function showAlert(message, type = 'info') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = 'alert show';
+            
+            if (type === 'success') {
+                alertBox.className += ' alert-success';
+            } else if (type === 'error') {
+                alertBox.className += ' alert-error';
+            } else {
+                alertBox.className += ' alert-info';
+            }
+            
+            alertBox.textContent = message;
+            
+            setTimeout(() => {
+                alertBox.className = 'alert';
+            }, 5000);
+        }
+
+        // --- QR Code Functions ---
+
+        // Shows QR modal
+        function showQRModal(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row || !row.finalUrl) {
+                showAlert('No URL to generate QR code', 'error');
+                return;
+            }
+            
+            currentQRUrlForDownload = row.finalUrl;
+            document.getElementById('qrModal').style.display = 'block';
+            updateQRPreview();
+            
+            // Show URL in modal
+            document.getElementById('qrUrl').textContent = row.finalUrl;
+        }
+
+        // Closes QR modal
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+            currentQRUrlForDownload = '';
+        }
+
+        // Updates QR preview
+        function updateQRPreview() {
+            if (!currentQRUrlForDownload) return;
+            
+            const size = 300;
+            const margin = document.getElementById('qrMargin').value;
+            const ecc = document.getElementById('qrEccLevel').value;
+            const color = document.getElementById('qrColor').value.replace('#', '');
+            const bgcolor = document.getElementById('qrBgColor').value.replace('#', '');
+            
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(currentQRUrlForDownload)}&size=${size}x${size}&margin=${margin}&ecc=${ecc}&color=${color}&bgcolor=${bgcolor}`;
+            
+            document.getElementById('qrImage').src = qrUrl;
+        }
+
+        // Downloads QR code
+        function downloadQR(format) {
+            if (!currentQRUrlForDownload) return;
+            
+            const size = 1000; // Higher resolution for download
+            const margin = document.getElementById('qrMargin').value;
+            const ecc = document.getElementById('qrEccLevel').value;
+            const color = document.getElementById('qrColor').value.replace('#', '');
+            const bgcolor = document.getElementById('qrBgColor').value.replace('#', '');
+            
+            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(currentQRUrlForDownload)}&size=${size}x${size}&margin=${margin}&ecc=${ecc}&color=${color}&bgcolor=${bgcolor}&format=${format}`;
+            
+            const link = document.createElement('a');
+            link.href = qrUrl;
+            link.download = `qr_code_${new Date().getTime()}.${format}`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert(`QR code downloaded as ${format.toUpperCase()}`, 'success');
+        }
+
+        // Handles hex input for color picker
+        function handleHexInput(input, colorPickerId) {
+            let value = input.value.trim();
+            
+            // Add # if missing
+            if (value && !value.startsWith('#')) {
+                value = '#' + value;
+            }
+            
+            // Validate hex color
+            const hexRegex = /^#([0-9A-Fa-f]{3}){1,2}$/;
+            if (hexRegex.test(value)) {
+                document.getElementById(colorPickerId).value = value;
+                input.value = value;
+            }
+        }
+
+        // Handles Enter key in hex input
+        function handleHexEnter(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                updateQRPreview();
+            }
+        }
+
+        // Log statistics on page load (after everything is initialized)
+        window.addEventListener('load', function() {
+            setTimeout(logAppStatistics, 500);
+        });
     </script>
 </body>
 </html>
