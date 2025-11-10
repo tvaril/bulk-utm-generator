@@ -1,297 +1,314 @@
 # 🚀 UTM Generator
 
-A fast, offline-first, single-page UTM link generator with automatic updates, QR code generation, and data persistence. This tool is a single HTML file with no external dependencies (except for optional Excel export and QR generation APIs).
+A powerful, client-side UTM link generator with automatic updates, data persistence, and export capabilities. Perfect for marketing teams managing multiple campaigns.
 
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Offline](https://img.shields.io/badge/works-offline-brightgreen)
 
+## ✨ Features
+
+- ✅ **Automatic UTM link generation** with live preview
+- ✅ **Parameter sanitization** (lowercase, spaces→underscores)
+- ✅ **URL validation** with automatic protocol completion
+- ✅ **Proper handling** of anchors (#) and query parameters
+- ✅ **Export to CSV and Excel**
+- ✅ **QR code generation** with customizable settings
+- ✅ **Data backup and restore** (JSON format)
+- ✅ **Automatic/manual utm_id generation**
+- ✅ **Autocomplete with history**
+- ✅ **Advanced UTM parameters** (platform, format, tactic)
+- ✅ **Quick fill** for empty rows
+- ✅ **LocalStorage** with warning for issues
+- ✅ **Browser compatibility check**
+- ✅ **Offline indicator**
+- ✅ **Complete help and tooltips**
 
 ## 📑 Table of Contents
 
-1.  [Version and Changelog](#version-and-changelog)
-2.  [How to Use UTM Generator](#how-to-use-utm-generator)
-3.  [Required Fields](#required-fields)
-4.  [Automatic Text Formatting](#automatic-text-formatting)
-5.  [Automatic utm_id Generation](#automatic-utm_id-generation)
-6.  [Optional Advanced Parameters](#optional-advanced-parameters)
-7.  [Quick Fill](#quick-fill)
-8.  [Export and Backup](#export-and-backup)
-9.  [Data Storage](#data-storage)
-10. [QR Codes](#qr-codes)
-11. [Autocomplete](#autocomplete)
-12. [Data Management](#data-management)
-13. [Compatibility and Limitations](#compatibility-and-limitations)
-14. [Troubleshooting and Debugging](#troubleshooting-and-debugging)
-15. [Tips and Recommendations](#tips-and-recommendations)
+- [How to Use](#how-to-use)
+- [Required Fields](#required-fields)
+- [Automatic Text Formatting](#automatic-text-formatting)
+- [Automatic utm_id Generation](#automatic-utm_id-generation)
+- [Optional Advanced Parameters](#optional-advanced-parameters)
+- [Quick Fill](#quick-fill)
+- [Export and Backup](#export-and-backup)
+- [Data Storage](#data-storage)
+- [QR Codes](#qr-codes)
+- [Autocomplete](#autocomplete)
+- [Data Management](#data-management)
+- [Compatibility and Limitations](#compatibility-and-limitations)
+- [Troubleshooting and Debugging](#troubleshooting-and-debugging)
+- [Tips and Recommendations](#tips-and-recommendations)
+- [Version History](#version-history)
 
----
+## How to Use
 
-## 📋 Version and Changelog
-<a id="help-version"></a>
+This tool helps you create tracked UTM links for your marketing campaigns. All data is stored locally in your browser.
 
-**Current Version:** 1.0.0 (Jan 31, 2025)
+### Getting Started
 
-<details>
-<summary>📜 Show Version History</summary>
+1. Open `index.html` in your browser
+2. Fill in required fields (Base URL, utm_source, utm_medium, utm_campaign)
+3. UTM link generates automatically
+4. Copy or export your links
 
-#### v1.0.0 (Jan 31, 2025) - Stable Version
-* ✅ Automatic UTM link generation with live preview
-* ✅ Parameter sanitization (lowercase, spaces→underscores)
-* ✅ URL validation with automatic protocol addition
-* ✅ Correct handling of anchors (#) and query parameters
-* ✅ Export to CSV and Excel
-* ✅ QR code generation with settings
-* ✅ Data backup and restore (JSON)
-* ✅ Automatic/manual utm_id generation
-* ✅ Autocomplete with history
-* ✅ Advanced UTM parameters (platform, format, tactic)
-* ✅ Quick fill for empty rows
-* ✅ LocalStorage with warnings on issues
-* ✅ Browser compatibility check
-* ✅ Offline indicator
-* ✅ Complete help and tooltips
+[⬆️ Back to top](#-table-of-contents)
 
-</details>
+## Required Fields
 
----
+- **Base URL:** Enter the target address (e.g., `example.com` or `https://example.com/page`). The https:// protocol will be added automatically if not provided.
+- **utm_source:** Traffic source (e.g., `facebook`, `google`, `newsletter`)
+- **utm_medium:** Media type (e.g., `cpc`, `email`, `social`)
+- **utm_campaign:** Campaign name (e.g., `summer_sale`, `black_friday`)
 
-## 🎯 How to Use UTM Generator
-<a id="help-how-to-use"></a>
+[⬆️ Back to top](#-table-of-contents)
 
-This tool helps you create tracked UTM links for your marketing campaigns. All data is saved locally in your browser.
-
----
-
-## 📋 Required Fields
-<a id="help-required-fields"></a>
-
-* **Base URL:** Enter the destination address (e.g., `example.com` or `https://example.com/page`). The https:// protocol is added automatically if you omit it.
-* **utm_source:** Traffic source (e.g., `facebook`, `google`, `newsletter`)
-* **utm_medium:** Medium type (e.g., `cpc`, `email`, `social`)
-* **utm_campaign:** Campaign name (e.g., `summer_sale`, `black_friday`)
-
----
-
-## ✏️ Automatic Text Formatting
-<a id="help-auto-formatting"></a>
+## Automatic Text Formatting
 
 All UTM parameters (except Base URL and utm_id) are automatically formatted:
 
-* 🔤 **Converted to lowercase:** "FaceBook" → "facebook"
-* 🔗 **Spaces → underscores:** "Summer Sale" → "summer_sale"
-* 🧹 **Removal of disallowed characters:** Only letters, numbers, hyphens (-), and underscores (_) are allowed
+- 🔤 **Convert to lowercase:** "FaceBook" → "facebook"
+- 🔗 **Spaces → underscores:** "Summer Sale" → "summer_sale"
+- 🧹 **Remove disallowed characters:** Only letters, numbers, hyphens (-) and underscores (_) are allowed
 
-> **💡 Note:** Changes take effect after you finish typing (Tab or Enter).
+> 💡 **Note:** Changes take effect after you finish typing (Tab or Enter).
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## 🔢 Automatic utm_id Generation
-<a id="help-utm-id"></a>
+## Automatic utm_id Generation
 
 In the ⚙️ Settings section, you can enable/disable automatic `utm_id` generation:
 
-* **✅ Enabled (default):** Generates an ID in the format `YYYYMMDD_XXX` (date + sequence number), e.g., `20240323_001`
-* **✍️ Disabled:** You can enter your own custom ID manually
+- **✅ Enabled (default):** Generates ID in format `YYYYMMDD_XXX` (date + sequential number), e.g., `20240323_001`
+- **✍️ Disabled:** You can enter custom ID manually
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## ➕ Optional Advanced Parameters
-<a id="help-advanced-params"></a>
+## Optional Advanced Parameters
 
 In the ⚙️ Settings section, you can show additional columns:
 
-* **utm_source_platform:** Specific advertising platform (e.g., `facebook_ads`)
-* **utm_creative_format:** Ad format (e.g., `video`, `banner`)
-* **utm_marketing_tactic:** Campaign phase (e.g., `awareness`, `conversion`)
+- **utm_source_platform:** Specific advertising platform (e.g., `facebook_ads`)
+- **utm_creative_format:** Ad format (e.g., `video`, `banner`)
+- **utm_marketing_tactic:** Campaign stage (e.g., `awareness`, `conversion`)
 
-> **⚠️ Important:** These parameters require custom setup in Google Analytics 4!
+> ⚠️ **Important:** These parameters require custom setup in Google Analytics 4!
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## ⚡ Quick Fill
-<a id="help-quick-fill"></a>
+## Quick Fill
 
-Want to fill all empty rows with the same values? Use the **⚡ Quick Fill** section above the table.
+Want to fill all empty rows with the same values? Use the **⚡ Quick fill** section above the table.
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## 📤 Export and Backup
-<a id="help-export"></a>
+## Export and Backup
 
-* **💾 Export CSV:** Download your UTM links to a CSV file (works offline ✅)
-* **📊 Export Excel:** Download in XLSX format (⚠️ requires internet)
-* **💼 Backup Data (JSON):** Save a complete backup including history (works offline ✅)
-* **📥 Restore Data (JSON):** Load a previously saved backup (works offline ✅)
+- **💾 Export CSV:** Download your UTM links to CSV file *(works offline ✅)*
+- **📊 Export Excel:** Download to XLSX format *(⚠️ requires internet)*
+- **💼 Backup data (JSON):** Save complete backup including history *(works offline ✅)*
+- **📥 Restore data (JSON):** Load previously saved backup *(works offline ✅)*
 
-> **💡 Tip:** If you are working offline, use CSV export or JSON backup instead of Excel.
+> 💡 **Tip:** If working without connection, use CSV export or JSON backup instead of Excel.
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## 🗂️ Data Storage
-<a id="help-storage"></a>
+## Data Storage
 
 All data is automatically saved to your browser's **localStorage**:
 
-* ✅ Data persists even after closing the browser
-* ✅ Works offline
-* ⚠️ Data is stored *only* in this browser
-* 💡 We recommend creating regular backups (JSON)
+- ✅ Data remains even after closing the browser
+- ✅ Works offline
+- ⚠️ Data is stored only in this browser
+- 💡 We recommend creating regular backups (JSON)
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## 📱 QR Codes
-<a id="help-qr"></a>
+## QR Codes
 
-For each generated UTM link, you can create a QR code with custom settings for colors, margin size, and error correction level. You can download the QR code in various formats (PNG, JPEG, SVG, EPS).
+For each generated UTM link, you can create a QR code with custom color settings, margin size, and error correction level. QR code can be downloaded in various formats (PNG, JPEG, SVG, EPS).
 
-> **⚠️ Important:** QR code generation requires an internet connection (uses an external API).
+> ⚠️ **Important:** QR code generation requires internet connection (uses external API).
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## 🔍 Autocomplete
-<a id="help-autocomplete"></a>
+## Autocomplete
 
-When typing in fields, a history of previously used values is displayed. The history is saved automatically and can be cleared in ⚙️ Settings → 💾 Data Management.
+When typing into fields, a history of previously used values is displayed. History is saved automatically and can be cleared in ⚙️ Settings → 💾 Data Management.
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## 🛠️ Data Management
-<a id="help-data-management"></a>
+## Data Management
 
-* **🗑️ Clear Rows:** Deletes all rows (keeps history and settings)
-* **🧹 Clear Autocomplete History:** Deletes only the autocomplete history
-* **🔄 Reset Application:** Resets the application to a completely clean state (⚠️ deletes EVERYTHING!)
+- **🗑️ Clear rows:** Deletes all rows (preserves history and settings)
+- **🧹 Clear autocomplete history:** Deletes only autocomplete history
+- **🔄 Reset application:** Returns application to completely clean state *(⚠️ deletes EVERYTHING!)*
 
----
+[⬆️ Back to top](#-table-of-contents)
 
-## ⚠️ Compatibility and Limitations
-<a id="help-compatibility"></a>
+## Compatibility and Limitations
 
-### 📱 Supported Browsers
-* **Recommended:** Chrome 90+, Firefox 88+, Edge 90+, Safari 14+
-* **Minimum:** Chrome 49+, Firefox 45+, Edge 14+, Safari 10+
-* ❌ **Not Supported:** Internet Explorer (any version)
+### Supported Browsers
 
-### 🌐 Features Requiring Internet
-* **📊 Export to Excel:** Requires loading the external SheetJS library from a CDN
-* **📱 QR Codes:** Use an online API for generation (api.qrserver.com)
+- **Recommended:** Chrome 90+, Firefox 88+, Edge 90+, Safari 14+
+- **Minimum:** Chrome 49+, Firefox 45+, Edge 14+, Safari 10+
+- ❌ **Not supported:** Internet Explorer (any version)
 
-### 🔒 What Happens When Problems Occur
-* **Old Browser:** Red warning at the top with a description of the problem
-* **Lost Connection:** Orange warning and notification of limited functionality
-* **Full localStorage:** Warning and recommendation to create a backup
-* **Unsupported localStorage:** Data will not be saved between sessions
+### Features Requiring Internet
 
-### 🛡️ What Always Works (Even Offline)
-* ✅ UTM link generation
-* ✅ URL validation and cleaning
-* ✅ UTM parameter sanitization
-* ✅ Export to CSV
-* ✅ Saving to localStorage (if supported)
-* ✅ JSON backup and restore
-* ✅ Autocomplete and history
+- **📊 Excel export:** Requires loading external SheetJS library from CDN
+- **📱 QR codes:** Use online API for generation (api.qrserver.com)
 
----
+### What Happens with Problems
 
-## 🔧 Troubleshooting and Debugging
-<a id="help-debugging"></a>
+- **Old browser:** Red warning at top with problem description
+- **Lost connection:** Orange warning and notice about limited features
+- **Full localStorage:** Warning and recommendation to create backup
+- **Unsupported localStorage:** Data won't be saved between sessions
 
-### 📊 Developer Console
+### What Always Works (Even Offline)
+
+- ✅ UTM link generation
+- ✅ URL validation and cleaning
+- ✅ UTM parameter sanitization
+- ✅ CSV export
+- ✅ Saving to localStorage (if supported)
+- ✅ JSON backup and restore
+- ✅ Autocomplete and history
+
+[⬆️ Back to top](#-table-of-contents)
+
+## Troubleshooting and Debugging
+
+### Developer Console
+
 All technical information, verifications, and error messages are logged to the **browser console**. This is useful for diagnosing problems.
 
-### 🖥️ How to Open the Console
+### How to Open Console
 
-**🪟 Windows/Linux:**
-* `F12`
-* `Ctrl + Shift + I`
-* `Ctrl + Shift + J`
-* Right-click → Inspect → Console
+**Windows/Linux:**
+- `F12`
+- `Ctrl + Shift + I`
+- `Ctrl + Shift + J`
+- Right-click → Inspect → Console
 
-**🍎 macOS:**
-* `Cmd + Option + I`
-* `Cmd + Option + J`
-* Right-click → Inspect Element → Console
+**macOS:**
+- `Cmd + Option + I`
+- `Cmd + Option + J`
+- Right-click → Inspect Element → Console
 
-### 🔍 What You'll Find in the Console
-* ✅ **Version Info:** `🚀 UTM Generator v1.0.0`
-* ✅ **Compatibility Check:** "Browser compatibility check passed!"
-* ✅ **Backup Info:** "Restoring backup from version..."
-* ⚠️ **Warnings:** Problems with localStorage, different backup versions, etc.
-* ❌ **Errors:** Detailed information about problems parsing URLs, validation, etc.
-* 📝 **Debug Logs:** Technical information about the application's runtime
+### What You'll Find in Console
 
-### 🛠️ Common Problems and Solutions
+- ✅ **Version info:** `🚀 UTM Generator v1.0.0`
+- ✅ **Compatibility check:** "Browser compatibility check passed!"
+- ✅ **Backup info:** "Restoring backup from version..."
+- ⚠️ **Warnings:** localStorage issues, different backup versions, etc.
+- ❌ **Errors:** Detailed information about URL parsing problems, validation, etc.
+- 📝 **Debug logs:** Technical information about application operation
 
-#### ❌ Data is not saving or backup is not loading
+### Common Problems and Solutions
 
-**Possible Causes:**
-* LocalStorage is full or blocked
-* You are using private mode (Incognito)
-* The browser is blocking localStorage for local files
+<details>
+<summary><strong>❌ Data isn't saving or backup won't load</strong></summary>
 
-**Solution:**
-* Open the console (F12) and look for red errors
-* Check if an orange warning is displayed at the top
-* Clear browser data or use a different browser
-* Use JSON backups to transfer data
+**Possible causes:**
+- LocalStorage is full or blocked
+- Using private mode (Incognito)
+- Browser blocks localStorage for local files
+
+**Solutions:**
+- Open console (F12) and look for red errors
+- Check if orange warning displays at top
+- Clear browser data or use different browser
+- Use JSON backups for data transfer
+</details>
+
+<details>
+<summary><strong>❌ URL not generating or error message during validation</strong></summary>
+
+**Possible causes:**
+- Invalid URL format (missing domain or TLD)
+- Disallowed protocol (ftp://, javascript:, etc.)
+- Special characters in URL
+
+**Solutions:**
+- Open console and check warnings related to URL
+- Make sure URL contains domain with TLD (e.g., `example.com`)
+- Protocol https:// will be added automatically if missing
+- Console will show: "Could not parse URL for cleaning: ..."
+</details>
+
+<details>
+<summary><strong>❌ QR code or Excel export not working</strong></summary>
+
+**Possible causes:**
+- You are offline (no internet connection)
+- External API or library failed to load
+- Third-party blocking (AdBlock, firewall)
+
+**Solutions:**
+- Check internet connection
+- Look for red errors in console (e.g., "Failed to load resource")
+- Temporarily disable AdBlock or other extensions
+- Use CSV export (works offline) instead of Excel
+</details>
+
+<details>
+<summary><strong>❌ Application is slow or not responding</strong></summary>
+
+**Possible causes:**
+- Too many rows (hundreds)
+- Large autocomplete history
+- Full localStorage
+
+**Solutions:**
+- Export data and delete old rows
+- Clear autocomplete history (⚙️ Settings → Clear history)
+- Create backup and reset application
+- In console you can check data size: `localStorage`
+</details>
+
+### Debugging Tips
+
+- 🔴 **Red messages** = critical errors that stop function
+- 🟡 **Yellow messages** = warnings, application works but something isn't ideal
+- ⚪ **Regular messages** = information about progress (loading, saving, etc.)
+- When reporting problems, **always attach console screenshot**
+- Text from console can be copied (right-click → Copy message)
+
+[⬆️ Back to top](#-table-of-contents)
+
+## Tips and Recommendations
+
+- ✅ Use **consistent naming** across campaigns
+- ✅ Write values in **lowercase** without diacritics
+- ✅ Use **underscores** instead of spaces (happens automatically)
+- ✅ For long-term campaigns use **utm_id** for better tracking
+- ✅ Regularly **backup your data** to JSON file
+
+[⬆️ Back to top](#-table-of-contents)
+
+## Version History
+
+### v1.0.0 (January 31, 2025) - Stable version
+
+Initial release with complete feature set.
+
+[⬆️ Back to top](#-table-of-contents)
+
+## 📄 License
+
+MIT License - feel free to use and modify for your needs.
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
+
+## 👨‍💻 Author
+
+Created for efficient UTM campaign management.
 
 ---
 
-#### ❌ URL is not generating or validation error message
-
-**Possible Causes:**
-* Invalid URL format (missing domain or TLD)
-* Disallowed protocol (ftp://, javascript:, etc.)
-* Special characters in the URL
-
-**Solution:**
-* Open the console and check for URL-related warnings
-* Ensure the URL includes a domain with a TLD (e.g., `example.com`)
-* The https:// protocol is added automatically if missing
-* The console will show: "Could not parse URL for cleaning: ..."
-
----
-
-#### ❌ QR code or Excel export is not working
-
-**Possible Causes:**
-* You are offline (no internet connection)
-* The external API or library failed to load
-* Third-party blocking (AdBlock, firewall)
-
-**Solution:**
-* Check your internet connection
-* Look in the console for red errors (e.g., "Failed to load resource")
-* Temporarily disable AdBlock or other extensions
-* Use CSV export (works offline) instead of Excel
-
----
-
-#### ❌ Application is slow or unresponsive
-
-**Possible Causes:**
-* Too many rows (hundreds)
-* Large autocomplete history
-* Full localStorage
-
-**Solution:**
-* Export your data and delete old rows
-* Clear the autocomplete history (⚙️ Settings → Clear History)
-* Create a backup and reset the application
-* You can check data size in the console: `localStorage`
-
-### 💡 Debugging Tips
-* 🔴 **Red messages** = critical errors that stop functionality
-* 🟡 **Yellow messages** = warnings, the app works, but something is not ideal
-* ⚪ **Regular messages** = information about progress (loading, saving, etc.)
-* If you report a problem, **always include a screenshot of the console**
-* You can copy text from the console (Right-click → Copy message)
-
----
-
-## 💡 Tips and Recommendations
-<a id="help-tips"></a>
-
-* ✅ Use **consistent naming** across campaigns
-* ✅ Write values in **lowercase** without diacritics
-* ✅ Use **underscores** instead of spaces (happens automatically)
-* ✅ For long-term campaigns, use **utm_id** for better tracking
-* ✅ Regularly **back up your data** to a JSON file
+**Made with ❤️ for marketers**
