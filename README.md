@@ -220,81 +220,63 @@ All technical information, verifications, and error messages are logged to the *
 
 ### 🛠️ Common Problems and Solutions
 
-<details>
-<summary>❌ Data is not saving or backup is not loading</summary>
+#### ❌ Data is not saving or backup is not loading
 
-<p><strong>Possible Causes:</strong></p>
-<ul>
-<li>LocalStorage is full or blocked</li>
-<li>You are using private mode (Incognito)</li>
-<li>The browser is blocking localStorage for local files</li>
-</ul>
-<p><strong>Solution:</strong></p>
-<ul>
-<li>Open the console (F12) and look for red errors</li>
-<li>Check if an orange warning is displayed at the top</li>
-<li>Clear browser data or use a different browser</li>
-<li>Use JSON backups to transfer data</li>
-</ul>
+**Possible Causes:**
+* LocalStorage is full or blocked
+* You are using private mode (Incognito)
+* The browser is blocking localStorage for local files
 
-</details>
+**Solution:**
+* Open the console (F12) and look for red errors
+* Check if an orange warning is displayed at the top
+* Clear browser data or use a different browser
+* Use JSON backups to transfer data
 
-<details>
-<summary>❌ URL is not generating or validation error message</summary>
+---
 
-<p><strong>Possible Causes:</strong></p>
-<ul>
-<li>Invalid URL format (missing domain or TLD)</li>
-<li>Disallowed protocol (ftp://, javascript:, etc.)</li>
-<li>Special characters in the URL</li>
-</ul>
-<p><strong>Solution:</strong></p>
-<ul>
-<li>Open the console and check for URL-related warnings</li>
-<li>Ensure the URL includes a domain with a TLD (e.g., <code>example.com</code>)</li>
-<li>The https:// protocol is added automatically if missing</li>
-<li>The console will show: "Could not parse URL for cleaning: ..."</li>
-</ul>
+#### ❌ URL is not generating or validation error message
 
-</details>
+**Possible Causes:**
+* Invalid URL format (missing domain or TLD)
+* Disallowed protocol (ftp://, javascript:, etc.)
+* Special characters in the URL
 
-<details>
-<summary>❌ QR code or Excel export is not working</summary>
+**Solution:**
+* Open the console and check for URL-related warnings
+* Ensure the URL includes a domain with a TLD (e.g., `example.com`)
+* The https:// protocol is added automatically if missing
+* The console will show: "Could not parse URL for cleaning: ..."
 
-<p><strong>Possible Causes:</strong></p>
-<ul>
-<li>You are offline (no internet connection)</li>
-<li>The external API or library failed to load</li>
-<li>Third-party blocking (AdBlock, firewall)</li>
-</ul>
-<p><strong>Solution:</strong></p>
-<ul>
-<li>Check your internet connection</li>
-<li>Look in the console for red errors (e.g., "Failed to load resource")</li>
-<li>Temporarily disable AdBlock or other extensions</li>
-<li>Use CSV export (works offline) instead of Excel</li>
-</ul>
+---
 
-</details>
+#### ❌ QR code or Excel export is not working
 
-<details>
-<summary>❌ Application is slow or unresponsive</summary>
+**Possible Causes:**
+* You are offline (no internet connection)
+* The external API or library failed to load
+* Third-party blocking (AdBlock, firewall)
 
-<p><strong>Possible Causes:</strong></p>
-<ul>
-<li>Too many rows (hundreds)</li>
-<li>Large autocomplete history</li>
-<li>Full localStorage</li>
-</ul>
-<p><strong>Solution:</strong></p>
-<ul>
-<li>Export your data and delete old rows</li>
-<li>Clear the autocomplete history (⚙️ Settings → Clear History)</li>
-<li>Create a backup and reset the application</li>
-<li>You can check data size in the console: <code>localStorage</code></li>
-</ul>
+**Solution:**
+* Check your internet connection
+* Look in the console for red errors (e.g., "Failed to load resource")
+* Temporarily disable AdBlock or other extensions
+* Use CSV export (works offline) instead of Excel
 
-</details>
+---
+
+#### ❌ Application is slow or unresponsive
+
+**Possible Causes:**
+* Too many rows (hundreds)
+* Large autocomplete history
+* Full localStorage
+
+**Solution:**
+* Export your data and delete old rows
+* Clear the autocomplete history (⚙️ Settings → Clear History)
+* Create a backup and reset the application
+* You can check data size in the console: `localStorage`
 
 ### 💡 Debugging Tips
 * 🔴 **Red messages** = critical errors that stop functionality
