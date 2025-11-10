@@ -3,8 +3,15 @@
 A powerful, client-side UTM link generator with automatic updates, data persistence, and export capabilities. Perfect for marketing teams managing multiple campaigns.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-GPL--v3-blue)
 ![Offline](https://img.shields.io/badge/works-offline-brightgreen)
+
+### Key Points:
+- ✅ **Freedom to use** - Use for any purpose
+- ✅ **Freedom to study** - Access to source code
+- ✅ **Freedom to modify** - Make changes as needed
+- ✅ **Freedom to share** - Distribute copies
+- ⚠️ **Copyleft** - Derivative works must also be GPL-licensed
 
 ## ✨ Features
 
