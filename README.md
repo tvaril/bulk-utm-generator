@@ -1,4 +1,4 @@
-# 🚀 UTM Generator
+# 🚀 Bulk UTM Generator
 
 A powerful, client-side UTM link generator with automatic updates, data persistence, and export capabilities. Perfect for marketing teams managing multiple campaigns.
 
