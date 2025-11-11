@@ -376,11 +376,11 @@ Contributions, issues, and feature requests are welcome!
 Created for efficient UTM campaign management.
 
 ### 🙏 Acknowledgments
-[SheetJS](https://sheetjs.com/) for Excel export functionality
-[QR Server](https://goqr.me/) API for QR code generation
-[Gemini Pro 2.5](https://gemini.google.com/?hl=cs)
-[Claude Sonet 4.5](https://claude.ai/)
-All contributors and testers
+- [SheetJS](https://sheetjs.com/) for Excel export functionality
+- [QR Server](https://goqr.me/) API for QR code generation
+- [Gemini Pro 2.5](https://gemini.google.com/?hl=cs)
+- [Claude Sonet 4.5](https://claude.ai/)
+- All contributors and testers
 
 ---
 
