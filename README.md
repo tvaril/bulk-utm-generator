@@ -48,6 +48,7 @@ A powerful, client-side UTM link generator with automatic updates, data persiste
 - [Troubleshooting and Debugging](#troubleshooting-and-debugging)
 - [Tips and Recommendations](#tips-and-recommendations)
 - [Version History](#version-history)
+- [Security and Limitations](#-security-and-limitations)
 
 ## How to Use
 
@@ -283,6 +284,64 @@ All technical information, verifications, and error messages are logged to the *
 - ⚪ **Regular messages** = information about progress (loading, saving, etc.)
 - When reporting problems, **always attach console screenshot**
 - Text from console can be copied (right-click → Copy message)
+
+[⬆️ Back to top](#-table-of-contents)
+
+## 🔒 Security and Limitations
+
+> ⚠️ **IMPORTANT SECURITY NOTICE**
+
+This application is **not designed for public internet deployment** and does not include advanced security mechanisms such as protection against XSS attacks, CSRF attacks, or input sanitization for online environments.
+
+### 🎯 Intended Use
+
+The application is primarily designed for:
+
+- ✅ **Local use** - Running directly from your computer (`file://` protocol)
+- ✅ **Internal corporate environment** - Intranet behind firewall
+- ✅ **Personal projects** - Individuals or small teams
+- ✅ **Offline work** - No internet connection required
+
+### ⚠️ Security Limitations
+
+The application **does not include** the following security features:
+
+- ❌ Protection against XSS (Cross-Site Scripting) attacks
+- ❌ Protection against CSRF (Cross-Site Request Forgery)
+- ❌ Server-side validation and data sanitization
+- ❌ User authentication and authorization
+- ❌ Rate limiting for API requests
+- ❌ Sensitive data encryption
+- ❌ Content Security Policy (CSP) headers
+
+### 🛡️ Recommendations for Safe Use
+
+- ✅ **Use locally** - Open HTML file directly in your browser
+- ✅ **Don't share sensitive data** - Avoid using for confidential campaigns on public internet
+- ✅ **Backup regularly** - Data is stored only in browser localStorage
+- ✅ **Trust only your own backups** - Don't load JSON backups from unknown sources
+- ✅ **Use in controlled environments** - Behind firewall or on trusted networks only
+
+### 💡 For Production Deployment
+
+If you plan to deploy this application on a public web server, we **strongly recommend**:
+
+1. Implement server-side validation
+2. Add Content Security Policy (CSP)
+3. Sanitize all inputs on server side
+4. Use HTTPS with valid certificates
+5. Implement user authentication and authorization
+6. Add rate limiting for API endpoints
+7. Regular security audits and penetration testing
+8. Monitor for suspicious activity
+9. Keep dependencies updated
+10. Follow OWASP security guidelines
+
+### 📚 Further Reading
+
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [Content Security Policy Guide](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
+- [XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
 
 [⬆️ Back to top](#-table-of-contents)
 

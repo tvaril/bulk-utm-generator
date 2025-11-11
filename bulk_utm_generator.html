@@ -1041,6 +1041,7 @@
                         <li><a href="#help-compatibility">Compatibility and limitations</a></li>
                         <li><a href="#help-debugging">Troubleshooting and debugging</a></li>
                         <li><a href="#help-tips">Tips and recommendations</a></li>
+                        <li><a href="#help-security">Security and limitations</a></li>
                     </ol>
                 </nav>
                 <!-- 1. VERSION AND CHANGELOG -->
@@ -1345,6 +1346,63 @@
                         <li>When reporting problems, <strong>always attach console screenshot</strong></li>
                         <li>Text from console can be copied (right-click → Copy message)</li>
                     </ul>
+                    <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
+                </section>
+                <!-- 15. SECURITY -->
+                <section id="help-security">
+                    <h2 style="color: #1e88e5; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 30px;">🔒 Security and Limitations</h2>
+                    
+                    <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 15px 0; border-radius: 4px;">
+                        <strong>⚠️ Important Security Notice:</strong>
+                        <p style="margin-top: 10px;">
+                            This application is <strong>not designed for public internet deployment</strong> and does not include advanced security mechanisms such as protection against XSS attacks, CSRF attacks, or input sanitization for online environments.
+                        </p>
+                    </div>
+                    
+                    <h3 style="color: #424242; margin-top: 20px;">🎯 Intended Use</h3>
+                    <p>The application is primarily designed for:</p>
+                    <ul>
+                        <li>✅ <strong>Local use</strong> - Running directly from your computer (file://)</li>
+                        <li>✅ <strong>Internal corporate environment</strong> - Intranet behind firewall</li>
+                        <li>✅ <strong>Personal projects</strong> - Individuals or small teams</li>
+                        <li>✅ <strong>Offline work</strong> - No internet connection required</li>
+                    </ul>
+                    
+                    <h3 style="color: #424242; margin-top: 20px;">⚠️ Security Limitations</h3>
+                    <p>The application <strong>does not include</strong> the following security features:</p>
+                    <ul>
+                        <li>❌ Protection against XSS (Cross-Site Scripting) attacks</li>
+                        <li>❌ Protection against CSRF (Cross-Site Request Forgery)</li>
+                        <li>❌ Server-side validation and data sanitization</li>
+                        <li>❌ User authentication and authorization</li>
+                        <li>❌ Rate limiting for API requests</li>
+                        <li>❌ Sensitive data encryption</li>
+                        <li>❌ Content Security Policy (CSP) headers</li>
+                    </ul>
+                    
+                    <h3 style="color: #424242; margin-top: 20px;">🛡️ Recommendations for Safe Use</h3>
+                    <ul>
+                        <li>✅ <strong>Use locally</strong> - Open HTML file directly in browser</li>
+                        <li>✅ <strong>Don't share sensitive data</strong> - Don't use for confidential campaigns on public internet</li>
+                        <li>✅ <strong>Backup regularly</strong> - Data is stored only in browser</li>
+                        <li>✅ <strong>Trust only your own backups</strong> - Don't load JSON backups from unknown sources</li>
+                    </ul>
+                    
+                    <div style="background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 15px; margin: 15px 0; border-radius: 4px;">
+                        <strong>💡 For production deployment:</strong>
+                        <p style="margin-top: 10px;">
+                            If you plan to deploy this application on a public web server, we strongly recommend:
+                        </p>
+                        <ul style="margin-top: 10px;">
+                            <li>Implement server-side validation</li>
+                            <li>Add Content Security Policy</li>
+                            <li>Sanitize all inputs on server</li>
+                            <li>Use HTTPS</li>
+                            <li>Implement authentication</li>
+                            <li>Regular security audits</li>
+                        </ul>
+                    </div>
+                    
                     <p style="text-align: right;"><a href="#help-toc" style="font-size: 12px; color: #1e88e5;">⬆️ Back to contents</a></p>
                 </section>
                 <!-- 15. TIPS -->
