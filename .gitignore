@@ -1,0 +1,21 @@
+@"
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Backups
+*.bak
+*.backup
+
+# Temporary
+*.tmp
+.cache/
+"@ | Out-File -FilePath .gitignore -Encoding utf8

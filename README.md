@@ -56,7 +56,7 @@ This tool helps you create tracked UTM links for your marketing campaigns. All d
 
 ### Getting Started
 
-1. Open `index.html` in your browser
+1. Open `bulk_utm_generator.html` in your browser
 2. Fill in required fields (Base URL, utm_source, utm_medium, utm_campaign)
 3. UTM link generates automatically
 4. Copy or export your links
@@ -129,7 +129,7 @@ All data is automatically saved to your browser's **localStorage**:
 - ✅ Data remains even after closing the browser
 - ✅ Works offline
 - ⚠️ Data is stored only in this browser
-- 💡 We recommend creating regular backups (JSON)
+- 💡 I recommend creating regular backups (JSON)
 
 [⬆️ Back to top](#-table-of-contents)
 
